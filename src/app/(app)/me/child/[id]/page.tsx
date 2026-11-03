@@ -116,7 +116,7 @@ export default function ChildPage() {
                   size="s"
                   onClick={() => {
                     setTarget(e);
-                    setEndDate(today());
+                    setEndDate(e.start_date > today() ? e.start_date : today());
                     setInfo(null);
                     setWErr("");
                   }}
@@ -174,7 +174,7 @@ export default function ChildPage() {
       </BottomSheet>
       <BottomSheet open={!!target} onClose={() => setTarget(null)} title={`${target?.cls.name} 수강을 중단할까요?`}>
         <p className="mb-4 text-[15px] text-grey-700">중단하기 전에 확인해 주세요. 수강 기록은 지워지지 않아요.</p>
-        <TextField label="수강 중단일" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} error={wErr || undefined} />
+        <TextField label="수강 중단일 (이날부터 수업 없음)" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} error={wErr || undefined} />
         {info && (
           <dl className="mt-4 space-y-2 rounded-m bg-grey-50 px-4 py-3 text-[14px]">
             <div className="flex justify-between">
