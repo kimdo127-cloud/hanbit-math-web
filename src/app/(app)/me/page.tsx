@@ -6,8 +6,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useFamily } from "@/components/family";
 import { BottomSheet, Button, Select, TextField, Toast, markBack } from "@/components/ui";
-import { addChild, ApiError, changePassword, getFamilyContacts, GRADE_LABEL, listEnrollments, logout } from "@/lib/api";
-import { resetDB } from "@/lib/store";
+import { addChild, resetDemo, ApiError, changePassword, getFamilyContacts, GRADE_LABEL, listEnrollments, logout } from "@/lib/api";
 import type { Grade } from "@/lib/types";
 
 const RELATIONS = ["엄마", "아빠", "할머니", "할아버지", "보호자"];
@@ -127,8 +126,8 @@ export default function MePage() {
         >
           로그아웃
         </button>
-        <button className="w-full py-2 text-[12px] text-grey-400" onClick={() => { resetDB(); logout(); router.replace("/login"); }}>
-          (목업) 데이터 처음으로 되돌리기
+        <button className="w-full py-2 text-[12px] text-grey-400" onClick={async () => { await resetDemo().catch(() => {}); router.replace("/login"); }}>
+          (시연) 데이터 처음으로 되돌리기
         </button>
       </div>
 
