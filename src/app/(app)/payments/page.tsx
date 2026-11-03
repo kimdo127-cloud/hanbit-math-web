@@ -42,7 +42,7 @@ export default function PaymentsPage() {
                         {r.studentName} · {r.className}
                       </p>
                       <p className="mt-0.5 text-[13px] text-grey-500">
-                        {r.discount ? "형제 할인 10%" : "기본 수강료"}
+                        {[r.discount ? "형제 할인 10%" : "기본 수강료", r.partial && `첫 달 ${r.partial.count}/${r.partial.total}회분`].filter(Boolean).join(" · ")}
                         {r.paidAt && ` · ${Number(r.paidAt.slice(5, 7))}월 ${Number(r.paidAt.slice(8))}일 납부`}
                       </p>
                     </div>
@@ -55,7 +55,7 @@ export default function PaymentsPage() {
               </ul>
             </section>
           ))}
-          <p className="px-2 pt-1 text-[12px] leading-relaxed text-grey-500">수강료는 학원에서 직접 받아요. 둘째부터 10% 할인돼요.</p>
+          <p className="px-2 pt-1 text-[12px] leading-relaxed text-grey-500">수강료는 학원에서 직접 받아요. 둘째부터 10% 할인되고, 달 중간에 시작하면 첫 달은 남은 수업 수만큼만 내요.</p>
         </div>
       )}
     </main>

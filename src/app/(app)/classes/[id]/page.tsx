@@ -126,6 +126,7 @@ export default function ClassDetailPage() {
             <Item k="회당" v={<span className="tabular">약 {won(Math.round(c.monthly_fee / perMonth / 100) * 100)}</span>} />
             <Item k="형제 할인" v="둘째부터 10%" />
             <Item k="교재비" v="별도 (학원에서 안내)" />
+            <Item k="첫 달" v="남은 수업 수만큼 (회차 기준)" />
             <Item k="납부" v="매월 학원에서 직접" />
           </div>
         </Section>
@@ -218,7 +219,7 @@ export default function ClassDetailPage() {
             </span>
           </div>
         )}
-        <p className="mt-2 px-1 text-[12px] text-grey-500">학원 시간표에 따라 가장 가까운 수업일부터 시작해요.</p>
+        <p className="mt-2 px-1 text-[12px] text-grey-500">학원 시간표에 따라 가장 가까운 수업일부터 시작해요. 첫 달 수강료는 남은 수업 수만큼만 내요.</p>
         <Button size="xl" className="mt-6 w-full" disabled={busy || sel.length === 0 || over} onClick={submit}>
           {busy ? "신청 중…" : sel.length > 1 ? `${sel.length}명 신청하기` : "신청하기"}
         </Button>
