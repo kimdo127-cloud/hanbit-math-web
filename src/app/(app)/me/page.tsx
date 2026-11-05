@@ -1,7 +1,8 @@
 "use client";
-// MY: 설정형 목록 (프로필 → 자녀 → 도움 → 계정). 자세한 내용은 하위 화면에서
+// MY: 설정형 목록 (프로필 → 자녀 → 계정 → 고객센터). 자세한 내용은 하위 화면에서
+// 고객센터: 보통 앱처럼 챗봇 문의 + 전화 문의를 한 묶음으로 (챗봇 = 과제의 "규정 묻기" 화면)
 // 자녀는 학원이 등록한다 (같은 보호자 번호로 등록하면 자동 연결) → '자녀 추가'는 안내만
-import { ChevronRight, KeyRound, MessageCircleQuestion, Phone, Plus } from "lucide-react";
+import { Bot, ChevronRight, Headphones, KeyRound, Phone, Plus } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -96,14 +97,6 @@ export default function MePage() {
         </section>
 
         <section>
-          <h2 className="px-2 pb-2 text-[13px] font-semibold text-grey-500">도움</h2>
-          <div className="overflow-hidden rounded-3xl bg-white">
-            <Row href="/me/ask" onClick={markBack} icon={<MessageCircleQuestion size={18} />} title="규정 묻기" sub="수강료 · 보강 · 환불 · 상담 시간" />
-          </div>
-          <p className="px-2 pt-2 text-[12px] text-grey-500">한빛수학 {ACADEMY_PHONE} · 학부모 상담 매월 마지막 주 토요일 10:00~13:00 (전화 예약)</p>
-        </section>
-
-        <section>
           <h2 className="px-2 pb-2 text-[13px] font-semibold text-grey-500">계정</h2>
           <div className="divide-y divide-grey-100 overflow-hidden rounded-3xl bg-white">
             <Row href="/me/contacts" onClick={markBack} icon={<Phone size={18} />} title="보호자 연락처" sub={`${contactCount}개`} />
@@ -117,6 +110,15 @@ export default function MePage() {
               }}
             />
           </div>
+        </section>
+
+        <section>
+          <h2 className="px-2 pb-2 text-[13px] font-semibold text-grey-500">고객센터</h2>
+          <div className="divide-y divide-grey-100 overflow-hidden rounded-3xl bg-white">
+            <Row href="/me/ask" onClick={markBack} icon={<Bot size={18} />} title="챗봇 문의" sub="수강료 · 보강 · 환불 규정을 바로 안내해요" />
+            <Row href={`tel:${ACADEMY_PHONE}`} icon={<Headphones size={18} />} title="전화 문의" sub={`${ACADEMY_PHONE} · 평일 14:00~22:00`} />
+          </div>
+          <p className="px-2 pt-2 text-[12px] text-grey-500">학부모 상담은 매월 마지막 주 토요일 10:00~13:00, 전화로 예약해 주세요.</p>
         </section>
 
         <button

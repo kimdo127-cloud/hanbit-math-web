@@ -1,5 +1,5 @@
 "use client";
-// MY > 규정 묻기: 질문 → 백엔드 → Dify(규정 문서 검색 + GPT) → 답과 근거
+// MY > 고객센터 > 챗봇 문의 (과제의 "규정 묻기" 화면): 질문 → 백엔드 → Dify(규정 문서 검색 + GPT) → 답과 근거
 // 답 형식: 굵은 결론 → 항목 3개 이내 → 📄 근거 안내 줄. 근거를 누르면 검색된 규정 원문(자세히 보기)
 import { ArrowUp, FileText } from "lucide-react";
 import { Fragment, useEffect, useRef, useState } from "react";
@@ -98,7 +98,7 @@ export default function AskPage() {
 
   return (
     <main className="flex min-h-dvh flex-col">
-      <TopBar title="규정 묻기" back />
+      <TopBar title="챗봇 문의" back />
 
       <div className="flex-1 space-y-3 px-4 pt-2 pb-36">
         <div className="max-w-[85%] rounded-2xl rounded-tl-md bg-white px-4 py-3 text-[15px] leading-relaxed text-grey-700">
