@@ -1,12 +1,12 @@
 "use client";
 // 강좌 상세 (하단 탭 숨김): 요약 → 수업 정보 → 강좌 소개 → 진도 계획 → 수강료 → 환불·보강 규정 → [수강 신청]
 // 사례: 어학원 강좌 안내(수강료·교재비·정원·규정을 한 페이지에), 학원법 시행령 별표4 환불 기준
-// 신청 규칙: 이미 다니는 자녀만 고를 수 없음. 학년이 달라도(선행·복습) 신청 가능, 안내만. 쌍둥이 등 여러 명 동시 신청 가능
+// 신청 규칙: 이미 다니는 자녀, 대상 학년이 아닌 자녀는 고를 수 없음 (선행·복습은 상담·레벨 테스트 후 학원이 등록 → 누르면 안내). 쌍둥이 등 여러 명 동시 신청 가능
 import { Check } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { BottomSheet, Button, Dialog, Loader, Toast, TopBar, WEEKDAY, fmtDate, won } from "@/components/ui";
-import { ApiError, enrollMany, getClassDetail, GRADE_LABEL } from "@/lib/api";
+import { ACADEMY_PHONE, ApiError, enrollMany, getClassDetail, GRADE_LABEL } from "@/lib/api";
 
 type Detail = Awaited<ReturnType<typeof getClassDetail>>;
 
@@ -36,6 +36,7 @@ export default function ClassDetailPage() {
   const [busy, setBusy] = useState(false);
   const [rejected, setRejected] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
+  const [advance, setAdvance] = useState<string | null>(null); // 선행 안내
 
   const load = useCallback(() => {
     getClassDetail(id).then(setD);
@@ -46,11 +47,11 @@ export default function ClassDetailPage() {
   const c = d.cls;
   const left = c.capacity - c.count;
   const full = left <= 0;
-  const selectable = d.kids.filter((k) => !k.enrolled);
+  const selectable = d.kids.filter((k) => !k.enrolled && !k.gradeDiff);
+  const advanceMsg = (names: string) => `${names} 학생은 ${GRADE_LABEL[c.target_grade]} 대상이 아니라 앱에서 신청할 수 없어요. 선행 수강은 학원 상담과 레벨 테스트 후에 등록해 드려요.\n한빛수학 ${ACADEMY_PHONE}`;
   const days = c.schedules.map((s) => WEEKDAY[s.weekday]).join("·");
   const perMonth = c.schedules.length * 4;
   const hours = c.schedules[0] ? (Number(c.schedules[0].end_time.slice(0, 2)) * 60 + Number(c.schedules[0].end_time.slice(3)) - (Number(c.schedules[0].start_time.slice(0, 2)) * 60 + Number(c.schedules[0].start_time.slice(3)))) / 60 : 0;
-  const selDiff = d.kids.filter((k) => sel.includes(k.id) && k.gradeDiff);
   const over = sel.length > left;
 
   const submit = async () => {
@@ -168,13 +169,15 @@ export default function ClassDetailPage() {
         <Button
           size="xl"
           className="w-full"
-          disabled={full || selectable.length === 0}
+          disabled={full || d.kids.every((k) => k.enrolled)}
           onClick={() => {
+            // 신청할 수 있는 자녀가 없고 학년이 다른 자녀만 있으면 → 선행 안내
+            if (selectable.length === 0) return setAdvance(advanceMsg(d.kids.filter((k) => !k.enrolled).map((k) => k.name).join(", ")));
             setSel(selectable.length === 1 ? [selectable[0].id] : []);
             setOpen(true);
           }}
         >
-          {full ? "정원이 다 찼어요" : selectable.length === 0 ? "모든 자녀가 수강 중이에요" : "수강 신청"}
+          {full ? "정원이 다 찼어요" : d.kids.every((k) => k.enrolled) ? "모든 자녀가 수강 중이에요" : "수강 신청"}
         </Button>
       </div>
 
@@ -187,29 +190,24 @@ export default function ClassDetailPage() {
               <button
                 key={k.id}
                 disabled={k.enrolled}
-                onClick={() => setSel(on ? sel.filter((x) => x !== k.id) : [...sel, k.id])}
-                className={`flex w-full items-center gap-3 rounded-m border px-4 py-3 text-left ${on ? "border-brand bg-brand-weak" : "border-grey-200"} disabled:bg-grey-50`}
+                onClick={() => (k.gradeDiff ? setAdvance(advanceMsg(k.name)) : setSel(on ? sel.filter((x) => x !== k.id) : [...sel, k.id]))}
+                className={`flex w-full items-center gap-3 rounded-m border px-4 py-3 text-left ${on ? "border-brand bg-brand-weak" : "border-grey-200"} ${k.gradeDiff ? "bg-grey-50" : ""} disabled:bg-grey-50`}
               >
-                <span className={`grid size-5 place-items-center rounded-full border ${on ? "border-brand bg-brand text-white" : "border-grey-400"} ${k.enrolled ? "opacity-0" : ""}`}>
+                <span className={`grid size-5 place-items-center rounded-full border ${on ? "border-brand bg-brand text-white" : "border-grey-400"} ${k.enrolled || k.gradeDiff ? "opacity-0" : ""}`}>
                   {on && <Check size={13} strokeWidth={3} />}
                 </span>
-                <span className={`flex-1 text-[15px] font-semibold ${k.enrolled ? "text-grey-400" : ""}`}>
+                <span className={`flex-1 text-[15px] font-semibold ${k.enrolled || k.gradeDiff ? "text-grey-400" : ""}`}>
                   {k.name} <span className="ml-1 text-[13px] font-normal text-grey-500">{GRADE_LABEL[k.grade as keyof typeof GRADE_LABEL]}</span>
                 </span>
                 {k.enrolled ? (
                   <span className="text-[12px] font-semibold text-grey-400">수강 중 · 신청 불가</span>
                 ) : (
-                  k.gradeDiff && <span className="text-[12px] font-semibold text-warning">대상 학년 아님</span>
+                  k.gradeDiff && <span className="text-[12px] font-semibold text-grey-500">선행 · 상담 후 등록 ›</span>
                 )}
               </button>
             );
           })}
         </div>
-        {selDiff.length > 0 && (
-          <p className="mt-3 rounded-m bg-warning-weak px-3.5 py-2.5 text-[13px] leading-relaxed text-grey-700">
-            {selDiff.map((k) => k.name).join(", ")} 학생에게는 {GRADE_LABEL[c.target_grade]} 대상 강좌예요. 선행·복습으로 들을 수 있지만, 진도가 맞는지 학원과 먼저 상담하는 걸 권해요.
-          </p>
-        )}
         {over && <p className="mt-3 text-[13px] text-danger">남은 자리가 {left}개예요. 신청할 자녀 수를 줄여 주세요.</p>}
         {d.firstDate && (
           <div className="mt-4 flex items-center justify-between rounded-m bg-grey-50 px-4 py-3 text-[14px]">
@@ -225,6 +223,7 @@ export default function ClassDetailPage() {
         </Button>
       </BottomSheet>
       <Dialog open={!!rejected} title="신청할 수 없어요" body={rejected} primary="확인" onPrimary={() => setRejected(null)} />
+      <Dialog open={!!advance} title="선행 수강은 상담 후 등록해요" body={advance} primary="확인" onPrimary={() => setAdvance(null)} />
       <Toast message={toast} onDone={() => setToast(null)} />
     </main>
   );

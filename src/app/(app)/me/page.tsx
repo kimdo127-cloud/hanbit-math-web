@@ -1,15 +1,13 @@
 "use client";
-// MY: 설정형 목록 (프로필 → 자녀 → 계정). 자세한 내용은 하위 화면에서
-import { ChevronRight, KeyRound, Phone, Plus } from "lucide-react";
+// MY: 설정형 목록 (프로필 → 자녀 → 도움 → 계정). 자세한 내용은 하위 화면에서
+// 자녀는 학원이 등록한다 (같은 보호자 번호로 등록하면 자동 연결) → '자녀 추가'는 안내만
+import { ChevronRight, KeyRound, MessageCircleQuestion, Phone, Plus } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useFamily } from "@/components/family";
-import { BottomSheet, Button, Select, TextField, Toast, markBack } from "@/components/ui";
-import { addChild, resetDemo, ApiError, changePassword, getFamilyContacts, GRADE_LABEL, listEnrollments, logout } from "@/lib/api";
-import type { Grade } from "@/lib/types";
-
-const RELATIONS = ["엄마", "아빠", "할머니", "할아버지", "보호자"];
+import { BottomSheet, Button, Dialog, TextField, Toast, markBack } from "@/components/ui";
+import { ACADEMY_PHONE, resetDemo, ApiError, changePassword, getFamilyContacts, GRADE_LABEL, listEnrollments, logout } from "@/lib/api";
 
 function Row({ href, icon, title, sub, onClick }: { href?: string; icon?: React.ReactNode; title: React.ReactNode; sub?: React.ReactNode; onClick?: (e: React.MouseEvent<HTMLElement>) => void }) {
   const body = (
@@ -39,9 +37,9 @@ export default function MePage() {
   const { parent, children, reload } = useFamily();
   const [classes, setClasses] = useState<Record<number, string[]>>({});
   const [contactCount, setContactCount] = useState(0);
-  const [sheet, setSheet] = useState<null | "password" | "child">(null);
+  const [sheet, setSheet] = useState<null | "password">(null);
+  const [addInfo, setAddInfo] = useState(false);
   const [pw, setPw] = useState({ cur: "", next: "", confirm: "" });
-  const [child, setChild] = useState({ name: "", school: "", grade: 7 as Grade, birth_date: "", relation: "엄마", phone: "" });
   const [error, setError] = useState("");
   const [toast, setToast] = useState<string | null>(null);
 
@@ -89,16 +87,20 @@ export default function MePage() {
               />
             ))}
             <button
-              onClick={() => {
-                setChild({ name: "", school: "", grade: 7, birth_date: "", relation: "엄마", phone: "" });
-                setError("");
-                setSheet("child");
-              }}
+              onClick={() => setAddInfo(true)}
               className="flex w-full items-center gap-2 px-5 py-4 text-[15px] font-semibold text-brand active:bg-grey-50"
             >
               <Plus size={18} /> 자녀 추가
             </button>
           </div>
+        </section>
+
+        <section>
+          <h2 className="px-2 pb-2 text-[13px] font-semibold text-grey-500">도움</h2>
+          <div className="overflow-hidden rounded-3xl bg-white">
+            <Row href="/me/ask" onClick={markBack} icon={<MessageCircleQuestion size={18} />} title="규정 묻기" sub="수강료 · 보강 · 환불 · 상담 시간" />
+          </div>
+          <p className="px-2 pt-2 text-[12px] text-grey-500">한빛수학 {ACADEMY_PHONE} · 학부모 상담 매월 마지막 주 토요일 10:00~13:00 (전화 예약)</p>
         </section>
 
         <section>
@@ -147,28 +149,13 @@ export default function MePage() {
         </Button>
       </BottomSheet>
 
-      <BottomSheet open={sheet === "child"} onClose={() => setSheet(null)} title="자녀 추가">
-        <div className="space-y-3">
-          <TextField label="이름" value={child.name} onChange={(e) => setChild({ ...child, name: e.target.value })} />
-          <div className="flex gap-2">
-            <Select label="학년" className="w-28" value={child.grade} onChange={(e) => setChild({ ...child, grade: Number(e.target.value) as Grade })}>
-              {(Object.keys(GRADE_LABEL) as unknown as Grade[]).map((g) => <option key={g} value={g}>{GRADE_LABEL[g]}</option>)}
-            </Select>
-            <TextField label="학교" className="flex-1" value={child.school} onChange={(e) => setChild({ ...child, school: e.target.value })} />
-          </div>
-          <TextField label="생년월일" type="date" value={child.birth_date} onChange={(e) => setChild({ ...child, birth_date: e.target.value })} />
-          <div className="flex gap-2">
-            <Select label="보호자 관계" className="w-28" value={child.relation} onChange={(e) => setChild({ ...child, relation: e.target.value })}>
-              {RELATIONS.map((r) => <option key={r}>{r}</option>)}
-            </Select>
-            <TextField label="보호자 연락처" className="flex-1" inputMode="tel" placeholder="010-0000-0000" value={child.phone} onChange={(e) => setChild({ ...child, phone: e.target.value })} />
-          </div>
-          {error && <p className="text-[13px] text-danger">{error}</p>}
-        </div>
-        <Button size="xl" className="mt-6 w-full" onClick={() => run(() => addChild(child), "자녀를 추가했어요")}>
-          추가하기
-        </Button>
-      </BottomSheet>
+      <Dialog
+        open={addInfo}
+        title="자녀는 학원에서 등록해요"
+        body={`학원 상담 후 이 보호자 번호로 등록하면 앱에 자동으로 연결돼요.\n한빛수학 ${ACADEMY_PHONE}`}
+        primary="확인"
+        onPrimary={() => setAddInfo(false)}
+      />
       <Toast message={toast} onDone={() => setToast(null)} />
     </main>
   );

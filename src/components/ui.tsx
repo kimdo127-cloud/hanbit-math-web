@@ -215,7 +215,7 @@ export function Dialog({
       <div className="animate-fade absolute inset-0 bg-black/40" onClick={onSecondary} />
       <div className="animate-fade relative w-full max-w-[340px] rounded-2xl bg-white p-6 shadow-lg">
         <h3 className="text-[18px] font-bold">{title}</h3>
-        {body && <div className="mt-2 text-[15px] leading-relaxed text-grey-700">{body}</div>}
+        {body && <div className="mt-2 whitespace-pre-line text-[15px] leading-relaxed text-grey-700">{body}</div>}
         <div className="mt-6 flex gap-2">
           {secondary && (
             <Button variant="secondary" className="flex-1" onClick={onSecondary}>

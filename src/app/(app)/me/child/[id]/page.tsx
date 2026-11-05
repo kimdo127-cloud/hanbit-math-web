@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useFamily } from "@/components/family";
-import { BottomSheet, Button, Loader, Select, TextField, Toast, TopBar, WEEKDAY, fmtDate, markBack, won } from "@/components/ui";
+import { BottomSheet, Button, Loader, TextField, Toast, TopBar, WEEKDAY, fmtDate, markBack, won } from "@/components/ui";
 import { ApiError, getWithdrawInfo, GRADE_LABEL, listEnrollments, today, updateChild, withdraw } from "@/lib/api";
 import type { Grade } from "@/lib/types";
 
@@ -160,9 +160,8 @@ export default function ChildPage() {
         <div className="space-y-3">
           <TextField label="이름" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
           <div className="flex gap-2">
-            <Select label="학년" className="w-28" value={form.grade} onChange={(e) => setForm({ ...form, grade: Number(e.target.value) as Grade })}>
-              {(Object.keys(GRADE_LABEL) as unknown as Grade[]).map((g) => <option key={g} value={g}>{GRADE_LABEL[g]}</option>)}
-            </Select>
+            {/* 학년은 다니는 강좌와 이어져 있어 학원만 바꾼다 */}
+            <TextField label="학년 (학원에서 변경)" className="w-32" value={GRADE_LABEL[form.grade]} disabled readOnly />
             <TextField label="학교" className="flex-1" value={form.school} onChange={(e) => setForm({ ...form, school: e.target.value })} />
           </div>
           <TextField label="생년월일" type="date" value={form.birth_date} onChange={(e) => setForm({ ...form, birth_date: e.target.value })} />

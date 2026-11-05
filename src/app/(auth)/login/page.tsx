@@ -73,7 +73,7 @@ function LoginForm() {
         </Button>
       </form>
       <p className="mt-6 text-center text-[14px] text-grey-700">
-        처음이신가요?{" "}
+        학원에 등록한 보호자인가요?{" "}
         <Link href="/signup" className="font-semibold text-brand">
           회원가입
         </Link>
