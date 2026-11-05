@@ -34,7 +34,10 @@ function Answer({ data, onSource }: { data: RegulationAnswer; onSource: (s: Regu
   const bullets = body.filter((l) => l.startsWith("- "));
   const text = body.filter((l) => !l.startsWith("- "));
   // 근거 줄의 규정 이름과 같은 조항만 보여 준다 (없으면 검색된 조항 전체)
-  const regName = sourceLine?.replace(/^📄\s*/, "").split(" · ")[0];
+  // 근거 줄을 고객용 짧은 이름으로 맞춘다 (모델이 가끔 정식 이름을 씀)
+  const [rawReg, ...topics] = (sourceLine?.replace(/^📄\s*/, "").replace(/\s*›\s*$/, "") ?? "").split(" · ");
+  const regName = /수강료|수강 계약/.test(rawReg) ? "수강료 규정" : /출결|보강/.test(rawReg) ? "출결·보강 규정" : /환불|중단|상담/.test(rawReg) ? "환불·상담 규정" : rawReg;
+  const sourceLabel = [regName, ...topics].join(" · ");
   const cited = data.sources.filter((s) => s.regulation === regName);
   return (
     <div className="max-w-[85%] rounded-2xl rounded-tl-md bg-white px-4 py-3 text-[15px] leading-relaxed text-grey-700">
@@ -58,7 +61,7 @@ function Answer({ data, onSource }: { data: RegulationAnswer; onSource: (s: Regu
       {sourceLine && data.sources.length > 0 && (
         <button onClick={() => onSource(cited.length ? cited : data.sources)} className="mt-2.5 flex items-center gap-1 text-[13px] text-grey-500 active:text-grey-700">
           <FileText size={14} />
-          {sourceLine.replace(/^📄\s*/, "").replace(/\s*›\s*$/, "")}
+          {sourceLabel}
           <span className="ml-0.5">›</span>
         </button>
       )}
