@@ -1,10 +1,11 @@
 "use client";
 // 회원가입: 학원에 등록된 보호자만 가입한다 (한빛수학 등록 학부모 전용 앱)
 // 1단계 학원에 등록한 휴대폰 번호 + 자녀 이름 확인 → 2단계 계정 만들기. 자녀는 학원이 등록해 둔 정보로 자동 연결
+// 가입은 학원이 보낸 초대 문자의 링크(/signup?code=…)로만: 코드가 없으면 안내만 보여 주고, 코드는 백엔드가 번호와 맞는지 검증
 import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button, TextField } from "@/components/ui";
 import { ACADEMY_PHONE, ApiError, checkEmail, checkGuardian, GRADE_LABEL, signup } from "@/lib/api";
 import type { Grade } from "@/lib/types";
@@ -18,6 +19,10 @@ export default function SignupPage() {
   const [kids, setKids] = useState<Kid[]>([]);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [code, setCode] = useState<string | null>(null); // 초대 링크의 코드 ("" = 링크 없이 들어옴)
+  useEffect(() => {
+    setCode(new URLSearchParams(window.location.search).get("code") ?? "");
+  }, []);
 
   const pwMismatch = !!form.password2 && form.password !== form.password2;
   const step1Valid = form.phone.replace(/[^0-9]/g, "").length >= 10 && form.childName.trim();
@@ -37,7 +42,7 @@ export default function SignupPage() {
 
   const next = () =>
     run(async () => {
-      const r = await checkGuardian(form.phone, form.childName);
+      const r = await checkGuardian(form.phone, form.childName, code ?? "");
       setKids(r.children);
       setStep(2);
     });
@@ -45,9 +50,32 @@ export default function SignupPage() {
   const submit = () =>
     run(async () => {
       await checkEmail(form.email);
-      await signup({ email: form.email, password: form.password, name: form.name, phone: form.phone, childName: form.childName });
+      await signup({ email: form.email, password: form.password, name: form.name, phone: form.phone, childName: form.childName, code: code ?? "" });
       router.replace("/");
     });
+
+  if (code === null) return null;
+  if (!code)
+    return (
+      <main className="flex min-h-dvh flex-col bg-white">
+        <header className="flex h-14 items-center px-3">
+          <Link href="/login" aria-label="뒤로" className="grid size-10 place-items-center">
+            <ChevronLeft />
+          </Link>
+        </header>
+        <div className="flex-1 px-6">
+          <h1 className="text-[24px] font-bold">초대 문자의 링크로 가입해 주세요</h1>
+          <p className="mt-3 text-[15px] leading-6 text-grey-700">
+            한빛수학 앱은 학원에 등록한 학부모만 쓸 수 있어요. 상담 후 학원이 보내 드린 초대 문자의 링크를 눌러 가입해 주세요.
+          </p>
+          <p className="mt-6 rounded-xl bg-grey-50 px-4 py-3 text-[13px] leading-5 text-grey-600">
+            문자를 받지 못했다면 학원으로 연락해 주세요.
+            <br />
+            한빛수학 {ACADEMY_PHONE}
+          </p>
+        </div>
+      </main>
+    );
 
   return (
     <main className="flex min-h-dvh flex-col bg-white">

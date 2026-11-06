@@ -1,5 +1,4 @@
 "use client";
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { Button, TextField } from "@/components/ui";
@@ -73,10 +72,7 @@ function LoginForm() {
         </Button>
       </form>
       <p className="mt-6 text-center text-[14px] text-grey-700">
-        학원에 등록한 보호자인가요?{" "}
-        <Link href="/signup" className="font-semibold text-brand">
-          회원가입
-        </Link>
+        가입은 학원에서 받은 <b className="font-semibold text-grey-900">초대 문자의 링크</b>로 할 수 있어요.
       </p>
       {/* 테스트용: 시연 계정으로 바로 로그인 (배포 전 제거) */}
       <div className="mt-auto pb-8">
