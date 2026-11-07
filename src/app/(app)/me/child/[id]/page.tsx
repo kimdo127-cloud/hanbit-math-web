@@ -1,11 +1,11 @@
 "use client";
-// MY > 자녀 상세: 기본 정보 · 레벨테스트 · 다니는 강좌(수강 중단) · 이 자녀의 보호자 연락처
+// MY > 자녀 상세: 기본 정보 · 레벨테스트 · 다니는 강좌(수강 중단). 연락처는 가족 공통이라 MY › 보호자 연락처에서만
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useFamily } from "@/components/family";
-import { BottomSheet, Button, Loader, TextField, Toast, TopBar, WEEKDAY, fmtDate, markBack, won } from "@/components/ui";
+import { BottomSheet, Button, Loader, TextField, Toast, TopBar, WEEKDAY, fmtDate, won } from "@/components/ui";
 import { ApiError, getLevelTests, getWithdrawInfo, GRADE_LABEL, listEnrollments, today, updateChild, withdraw } from "@/lib/api";
 import type { Grade } from "@/lib/types";
 
@@ -205,28 +205,13 @@ export default function ChildPage() {
           </div>
         </section>
 
-        <section>
-          <h2 className="px-2 pb-2 text-[13px] font-semibold text-grey-500">보호자 연락처</h2>
-          <div className="divide-y divide-grey-100 overflow-hidden rounded-3xl bg-white">
-            {c.contacts.map((x) => (
-              <Item key={x.id} k={x.is_primary ? `${x.relation} · 대표` : x.relation} v={<span className="tabular">{x.phone}</span>} />
-            ))}
-            <Link href="/me/contacts" onClick={markBack} className="flex items-center justify-between px-5 py-4 text-[15px] font-semibold active:bg-grey-50">
-              연락처 관리
-              <ChevronRight size={18} className="text-grey-400" />
-            </Link>
-          </div>
-        </section>
       </div>
 
       <BottomSheet open={open} onClose={() => setOpen(false)} title="자녀 정보 수정">
         <div className="space-y-3">
           <TextField label="이름" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-          <div className="flex gap-2">
-            {/* 학년은 다니는 강좌와 이어져 있어 학원만 바꾼다 */}
-            <TextField label="학년 (학원에서 변경)" className="w-32" value={GRADE_LABEL[form.grade]} disabled readOnly />
-            <TextField label="학교" className="flex-1" value={form.school} onChange={(e) => setForm({ ...form, school: e.target.value })} />
-          </div>
+          {/* 학년은 다니는 강좌와 이어져 있어 학원만 바꾼다 (수정 화면에 넣지 않음) */}
+          <TextField label="학교" value={form.school} onChange={(e) => setForm({ ...form, school: e.target.value })} />
           <TextField label="생년월일" type="date" value={form.birth_date} onChange={(e) => setForm({ ...form, birth_date: e.target.value })} />
           {error && <p className="text-[13px] text-danger">{error}</p>}
         </div>

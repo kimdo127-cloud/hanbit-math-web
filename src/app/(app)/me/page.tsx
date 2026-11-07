@@ -2,13 +2,13 @@
 // MY: 설정형 목록 (프로필 → 자녀 → 계정 → 고객센터). 자세한 내용은 하위 화면에서
 // 고객센터: 보통 앱처럼 챗봇 문의 + 전화 문의를 한 묶음으로 (챗봇 = 과제의 "규정 묻기" 화면)
 // 자녀는 학원이 등록한다 (같은 보호자 번호로 등록하면 자동 연결) → '자녀 추가'는 안내만
-import { Bot, ChevronRight, Headphones, KeyRound, Phone, Plus } from "lucide-react";
+import { Bot, ChevronRight, Headphones, KeyRound, Phone } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useFamily } from "@/components/family";
-import { BottomSheet, Button, Dialog, TextField, Toast, markBack } from "@/components/ui";
-import { ACADEMY_PHONE, resetDemo, ApiError, changePassword, getFamilyContacts, GRADE_LABEL, listEnrollments, logout } from "@/lib/api";
+import { BottomSheet, Button, TextField, Toast, markBack } from "@/components/ui";
+import { ACADEMY_PHONE, ApiError, changePassword, getFamilyContacts, GRADE_LABEL, listEnrollments, logout } from "@/lib/api";
 
 function Row({ href, icon, title, sub, onClick }: { href?: string; icon?: React.ReactNode; title: React.ReactNode; sub?: React.ReactNode; onClick?: (e: React.MouseEvent<HTMLElement>) => void }) {
   const body = (
@@ -39,7 +39,6 @@ export default function MePage() {
   const [classes, setClasses] = useState<Record<number, string[]>>({});
   const [contactCount, setContactCount] = useState(0);
   const [sheet, setSheet] = useState<null | "password">(null);
-  const [addInfo, setAddInfo] = useState(false);
   const [pw, setPw] = useState({ cur: "", next: "", confirm: "" });
   const [error, setError] = useState("");
   const [toast, setToast] = useState<string | null>(null);
@@ -87,12 +86,6 @@ export default function MePage() {
                 sub={classes[c.id]?.length ? classes[c.id].join(", ") : "다니는 강좌 없음"}
               />
             ))}
-            <button
-              onClick={() => setAddInfo(true)}
-              className="flex w-full items-center gap-2 px-5 py-4 text-[15px] font-semibold text-brand active:bg-grey-50"
-            >
-              <Plus size={18} /> 자녀 추가
-            </button>
           </div>
         </section>
 
@@ -130,9 +123,6 @@ export default function MePage() {
         >
           로그아웃
         </button>
-        <button className="w-full py-2 text-[12px] text-grey-400" onClick={async () => { await resetDemo().catch(() => {}); router.replace("/login"); }}>
-          (시연) 데이터 처음으로 되돌리기
-        </button>
       </div>
 
       <BottomSheet open={sheet === "password"} onClose={() => setSheet(null)} title="비밀번호 변경">
@@ -151,13 +141,6 @@ export default function MePage() {
         </Button>
       </BottomSheet>
 
-      <Dialog
-        open={addInfo}
-        title="자녀는 학원에서 등록해요"
-        body={`학원 상담 후 이 보호자 번호로 등록하면 앱에 자동으로 연결돼요.\n한빛수학 ${ACADEMY_PHONE}`}
-        primary="확인"
-        onPrimary={() => setAddInfo(false)}
-      />
       <Toast message={toast} onDone={() => setToast(null)} />
     </main>
   );

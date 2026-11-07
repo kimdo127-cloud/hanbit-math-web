@@ -6,7 +6,7 @@ import { Fragment, useEffect, useRef, useState } from "react";
 import { BottomSheet, TopBar } from "@/components/ui";
 import { ACADEMY_PHONE, ApiError, askRegulation, type RegulationAnswer } from "@/lib/api";
 
-const SUGGESTED = ["결석하면 보강 받을 수 있어요?", "중간에 그만두면 환불받아요?", "형제 할인 있어요?"];
+const SUGGESTED = ["보강 남은 거 있어요?", "이번 달 수강료 냈어요?", "중간에 그만두면 환불받아요?"];
 
 type Msg = { role: "me"; text: string } | { role: "bot"; data: RegulationAnswer } | { role: "error"; text: string };
 
@@ -102,7 +102,7 @@ export default function AskPage() {
 
       <div className="flex-1 space-y-3 px-4 pt-2 pb-36">
         <div className="max-w-[85%] rounded-2xl rounded-tl-md bg-white px-4 py-3 text-[15px] leading-relaxed text-grey-700">
-          수강료, 보강, 환불, 상담 시간처럼 <strong className="text-grey-900">학원 규정</strong>을 물어보세요. 아이별 출결·납부는 홈과 캘린더에서 볼 수 있어요.
+          <strong className="text-grey-900">학원 규정</strong>과 우리 아이 출결·보강·수강료·맞는 반을 물어보세요.
         </div>
         {msgs.length === 0 && (
           <div className="flex flex-wrap gap-2 pt-1">
@@ -158,7 +158,7 @@ export default function AskPage() {
             <ArrowUp size={18} />
           </button>
         </form>
-        <p className="pt-1.5 text-center text-[11px] text-grey-500">답은 학원 규정을 바탕으로 해요. 정확한 상담은 {ACADEMY_PHONE}</p>
+        <p className="pt-1.5 text-center text-[11px] text-grey-500">답은 학원 규정과 우리 아이 정보를 바탕으로 해요. 정확한 상담은 {ACADEMY_PHONE}</p>
       </div>
 
       <BottomSheet open={!!source} onClose={() => setSource(null)} title="근거 규정">
