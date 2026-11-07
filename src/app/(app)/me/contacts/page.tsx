@@ -1,19 +1,17 @@
 "use client";
-// MY > 보호자 연락처: 가족 단위로 한 번씩만 보여 준다 (DB에는 자녀마다 저장)
+// MY > 보호자 연락처: 가족 단위로 한 번만 저장 (형제 모두에게 같은 번호). 대표 번호는 학원 초대·안내 문자를 받는 번호라 학원이 바꾼다
 import { Phone, Plus, X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
-import { useFamily } from "@/components/family";
 import { BottomSheet, Button, Dialog, Loader, Select, TextField, Toast, TopBar } from "@/components/ui";
-import { addFamilyContact, ApiError, getFamilyContacts, removeFamilyContact } from "@/lib/api";
+import { ACADEMY_PHONE, addFamilyContact, ApiError, getFamilyContacts, removeFamilyContact } from "@/lib/api";
 
 const RELATIONS = ["엄마", "아빠", "할머니", "할아버지", "보호자"];
 type Contact = Awaited<ReturnType<typeof getFamilyContacts>>[number];
 
 export default function ContactsPage() {
-  const { children } = useFamily();
   const [list, setList] = useState<Contact[] | null>(null);
   const [open, setOpen] = useState(false);
-  const [ct, setCt] = useState({ relation: "아빠", phone: "", ids: [] as number[] });
+  const [ct, setCt] = useState({ relation: "아빠", phone: "" });
   const [del, setDel] = useState<Contact | null>(null);
   const [error, setError] = useState("");
   const [toast, setToast] = useState<string | null>(null);
@@ -26,7 +24,7 @@ export default function ContactsPage() {
   const add = async () => {
     setError("");
     try {
-      await addFamilyContact(ct.relation, ct.phone, ct.ids);
+      await addFamilyContact(ct.relation, ct.phone);
       setOpen(false);
       setToast("연락처를 추가했어요");
       load();
@@ -40,7 +38,7 @@ export default function ContactsPage() {
     setDel(null);
     if (!c) return;
     try {
-      await removeFamilyContact(c.relation, c.phone);
+      await removeFamilyContact(c.id);
       setToast("연락처를 지웠어요");
       load();
     } catch (e) {
@@ -55,10 +53,10 @@ export default function ContactsPage() {
         <Loader />
       ) : (
         <div className="space-y-3 px-4 pt-1">
-          <p className="px-1 text-[13px] text-grey-500">출결·보강·수납 안내를 받을 번호예요. 자녀마다 최소 하나는 있어야 해요.</p>
+          <p className="px-1 text-[13px] text-grey-500">출결·보강·수납 안내를 받을 번호예요. 모든 자녀에게 같이 적용돼요.</p>
           <ul className="divide-y divide-grey-100 overflow-hidden rounded-3xl bg-white">
             {list.map((c) => (
-              <li key={c.relation + c.phone} className="flex items-center gap-3 px-5 py-4">
+              <li key={c.id} className="flex items-center gap-3 px-5 py-4">
                 <span className="grid size-9 place-items-center rounded-full bg-grey-100 text-grey-700">
                   <Phone size={18} />
                 </span>
@@ -66,19 +64,19 @@ export default function ContactsPage() {
                   <span className="block text-[15px] font-semibold">
                     {c.relation} <span className="tabular ml-1 font-normal">{c.phone}</span>
                   </span>
-                  <span className="block text-[13px] text-grey-500">
-                    {c.children.length === children.length ? "모든 자녀" : c.children.map((x) => x.name).join(", ")}
-                  </span>
+                  {c.is_primary && <span className="block text-[13px] text-brand">대표 번호 · 학원 안내 문자를 받아요</span>}
                 </span>
-                <button aria-label="연락처 삭제" onClick={() => setDel(c)} className="grid size-8 place-items-center text-grey-400">
-                  <X size={18} />
-                </button>
+                {!c.is_primary && (
+                  <button aria-label="연락처 삭제" onClick={() => setDel(c)} className="grid size-8 place-items-center text-grey-400">
+                    <X size={18} />
+                  </button>
+                )}
               </li>
             ))}
             <li>
               <button
                 onClick={() => {
-                  setCt({ relation: "아빠", phone: "", ids: children.map((c) => c.id) });
+                  setCt({ relation: "아빠", phone: "" });
                   setError("");
                   setOpen(true);
                 }}
@@ -88,6 +86,7 @@ export default function ContactsPage() {
               </button>
             </li>
           </ul>
+          <p className="px-1 text-[12px] text-grey-500">대표 번호를 바꾸려면 한빛수학({ACADEMY_PHONE})에 요청해 주세요.</p>
         </div>
       )}
 
@@ -98,25 +97,6 @@ export default function ContactsPage() {
           </Select>
           <TextField label="연락처" className="flex-1" inputMode="tel" placeholder="010-0000-0000" value={ct.phone} onChange={(e) => setCt({ ...ct, phone: e.target.value })} />
         </div>
-        {children.length > 1 && (
-          <div className="mt-4">
-            <p className="mb-2 text-[13px] font-semibold text-grey-700">연락받을 자녀</p>
-            <div className="flex flex-wrap gap-2">
-              {children.map((c) => {
-                const on = ct.ids.includes(c.id);
-                return (
-                  <button
-                    key={c.id}
-                    onClick={() => setCt({ ...ct, ids: on ? ct.ids.filter((x) => x !== c.id) : [...ct.ids, c.id] })}
-                    className={`h-[34px] rounded-full px-4 text-[14px] font-semibold ${on ? "bg-grey-900 text-white" : "border border-grey-200 text-grey-700"}`}
-                  >
-                    {c.name}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        )}
         {error && <p className="mt-2 text-[13px] text-danger">{error}</p>}
         <Button size="xl" className="mt-6 w-full" disabled={!ct.phone} onClick={add}>
           추가하기

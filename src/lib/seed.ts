@@ -54,7 +54,7 @@ export function createSeed(): DB {
     families: [],
     parents: [],
     students: [],
-    student_contacts: [],
+    family_contacts: [],
     staff: [],
     classes: [],
     class_schedules: [],
@@ -66,6 +66,7 @@ export function createSeed(): DB {
     activity_logs: [],
     staff_tokens: [],
     level_tests: [], // 목업에는 없음 (백엔드 시드에만)
+    invitations: [],
   };
 
   // 직원
@@ -113,10 +114,9 @@ export function createSeed(): DB {
     { id: 1, family_id: 1, name: "김서준", grade: 8, school: "한빛중학교", birth_date: "2012-04-11" },
     { id: 2, family_id: 1, name: "김하린", grade: 7, school: "한빛중학교", birth_date: "2013-09-02" },
   );
-  db.student_contacts.push(
-    { id: 1, student_id: 1, relation: "엄마", phone: "010-1234-5678" },
-    { id: 2, student_id: 1, relation: "아빠", phone: "010-8765-4321" },
-    { id: 3, student_id: 2, relation: "엄마", phone: "010-1234-5678" },
+  db.family_contacts.push(
+    { id: 1, family_id: 1, relation: "엄마", phone: "010-1234-5678", is_primary: true },
+    { id: 2, family_id: 1, relation: "아빠", phone: "010-8765-4321", is_primary: false },
   );
   db.enrollments.push(
     { id: 1, student_id: 1, class_id: 2, start_date: "2026-09-01", end_date: null, refund_amount: null, refunded_at: null }, // 서준 중2 내신 대비
@@ -134,7 +134,7 @@ export function createSeed(): DB {
       db.students.push({ id: studentId, family_id: familyId, name: FILLER_NAMES[nameIdx % FILLER_NAMES.length], grade, school: "한빛중학교", birth_date: "2012-01-01" });
       db.enrollments.push({ id: enrollId++, student_id: studentId, class_id: i + 1, start_date: "2026-09-01", end_date: null, refund_amount: null, refunded_at: null });
       // 보호자 연락처 (키오스크에서 뒷자리 4자리로 찾음)
-      db.student_contacts.push({ id: db.student_contacts.length + 1, student_id: studentId, relation: k % 2 ? "아빠" : "엄마", phone: `010-${2000 + studentId * 13}-${String(1000 + ((studentId * 379) % 9000)).padStart(4, "0")}` });
+      db.family_contacts.push({ id: db.family_contacts.length + 1, family_id: familyId, relation: k % 2 ? "아빠" : "엄마", phone: `010-${2000 + studentId * 13}-${String(1000 + ((studentId * 379) % 9000)).padStart(4, "0")}`, is_primary: true });
       studentId++;
       familyId++;
       nameIdx++;
@@ -150,7 +150,7 @@ export function createSeed(): DB {
   db.families.push({ id: familyId, name: "윤채원 가족" });
   db.students.push({ id: studentId, family_id: familyId, name: "윤채원", grade: 7, school: "한빛중학교", birth_date: "2013-03-02" });
   db.enrollments.push({ id: enrollId++, student_id: studentId, class_id: 7, start_date: "2026-10-02", end_date: null, refund_amount: null, refunded_at: null });
-  db.student_contacts.push({ id: db.student_contacts.length + 1, student_id: studentId, relation: "엄마", phone: "010-4455-7788" });
+  db.family_contacts.push({ id: db.family_contacts.length + 1, family_id: familyId, relation: "엄마", phone: "010-4455-7788", is_primary: true });
 
   // 출결: 기준일까지 기록. 시연 학생은 정해진 패턴, 나머지는 대부분 출석
   const demoPattern: Record<number, Record<string, AttendanceStatus>> = {

@@ -3,10 +3,10 @@
 import { usePathname, useRouter } from "next/navigation";
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { getMe, isLoggedIn } from "@/lib/api";
-import type { Student, StudentContact } from "@/lib/types";
+import type { FamilyContact, Student } from "@/lib/types";
 import { Loader } from "./ui";
 
-type Child = Student & { contacts: StudentContact[] };
+type Child = Student & { contacts: FamilyContact[] }; // 연락처는 가족 공통
 interface FamilyCtx {
   parent: { id: number; name: string; email: string };
   children: Child[];

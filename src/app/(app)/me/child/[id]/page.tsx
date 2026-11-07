@@ -209,7 +209,7 @@ export default function ChildPage() {
           <h2 className="px-2 pb-2 text-[13px] font-semibold text-grey-500">보호자 연락처</h2>
           <div className="divide-y divide-grey-100 overflow-hidden rounded-3xl bg-white">
             {c.contacts.map((x) => (
-              <Item key={x.id} k={x.relation} v={<span className="tabular">{x.phone}</span>} />
+              <Item key={x.id} k={x.is_primary ? `${x.relation} · 대표` : x.relation} v={<span className="tabular">{x.phone}</span>} />
             ))}
             <Link href="/me/contacts" onClick={markBack} className="flex items-center justify-between px-5 py-4 text-[15px] font-semibold active:bg-grey-50">
               연락처 관리
