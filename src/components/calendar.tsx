@@ -2,7 +2,7 @@
 // 월 달력 (사례: 시대인재N 학부모 앱 출결 현황 — 날짜별 색 점 + 아래 상세)
 import { TODAY } from "@/lib/seed";
 
-export type Dot = "present" | "late" | "absent" | "makeup" | "available" | "planned";
+export type Dot = "present" | "late" | "absent" | "makeup" | "available" | "planned" | "leveltest";
 const DOT: Record<Dot, string> = {
   present: "bg-success",
   late: "bg-warning",
@@ -10,8 +10,9 @@ const DOT: Record<Dot, string> = {
   makeup: "bg-brand",
   available: "bg-brand",
   planned: "border border-grey-400", // 앞으로의 수업: 빈 점
+  leveltest: "bg-grey-700", // 정기 레벨테스트 (2월·8월)
 };
-export const DOT_LABEL: Record<Dot, string> = { present: "출석", late: "지각", absent: "결석", makeup: "보강", available: "신청 가능", planned: "예정" };
+export const DOT_LABEL: Record<Dot, string> = { present: "출석", late: "지각", absent: "결석", makeup: "보강", available: "신청 가능", planned: "예정", leveltest: "레벨테스트" };
 
 export function MonthCalendar({
   month,

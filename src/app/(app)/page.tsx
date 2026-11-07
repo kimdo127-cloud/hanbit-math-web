@@ -1,13 +1,13 @@
 "use client";
 // 홈 = 가족 전체를 한눈에 (사례: 세이프 출석기·체키 — 여러 자녀 출결을 한 화면, 등원 시각 강조)
 // 토스 홈 원칙: 자주 보는 것만, 할 일이 있을 때만 노출, 강조 버튼은 하나(보강 신청)
-// 순서: 미납(있을 때만) → 오늘 수업 → 이번 달 출결(+아이별 보강) → 이번 주 수업. 보강 신청이 밀리지 않게 출결을 위로
-import { AlertCircle, ChevronRight, Sigma } from "lucide-react";
+// 순서: 미납(있을 때만) → 레벨테스트 안내(2월·8월 시험 14일 전부터) → 오늘 수업 → 이번 달 출결(+아이별 보강) → 이번 주 수업. 보강 신청이 밀리지 않게 출결을 위로
+import { AlertCircle, ChevronRight, ClipboardCheck, Sigma } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useFamily } from "@/components/family";
 import { Loader, TopBar, WEEKDAY, fmtDate, markBack, won } from "@/components/ui";
-import { getChildHome, getFamilyUnpaid, getFamilyWeek, getMakeups, today, type AbsenceMakeup } from "@/lib/api";
+import { getChildHome, getFamilyUnpaid, getFamilyWeek, getLevelTestNotice, getMakeups, today, type AbsenceMakeup } from "@/lib/api";
 import { currentMonth, toMin } from "@/lib/calc";
 
 type Home = Awaited<ReturnType<typeof getChildHome>>;
@@ -100,11 +100,13 @@ export default function HomePage() {
   const [kids, setKids] = useState<Kid[] | null>(null);
   const [week, setWeek] = useState<Week | null>(null);
   const [unpaid, setUnpaid] = useState<Awaited<ReturnType<typeof getFamilyUnpaid>> | null>(null);
+  const [levelNotice, setLevelNotice] = useState<Awaited<ReturnType<typeof getLevelTestNotice>>>(null);
 
   useEffect(() => {
     Promise.all(children.map(async (c) => ({ home: await getChildHome(c.id), makeups: await getMakeups(c.id) }))).then(setKids);
     getFamilyWeek().then(setWeek);
     getFamilyUnpaid().then(setUnpaid);
+    getLevelTestNotice().then(setLevelNotice).catch(() => setLevelNotice(null));
   }, [children]);
 
   const go = (studentId: number) => (e: React.MouseEvent<HTMLAnchorElement>) => {
@@ -140,6 +142,19 @@ export default function HomePage() {
               </span>
               <ChevronRight size={18} className="text-grey-400" />
             </Link>
+          )}
+
+          {levelNotice && (
+            <div className="flex items-center gap-3 rounded-2xl bg-white px-4 py-3.5">
+              <ClipboardCheck size={18} className="shrink-0 text-brand" />
+              <span className="flex-1 text-[14px] text-grey-700">
+                <b className="text-grey-900">
+                  {mmdd(levelNotice.date)}({wd(levelNotice.date)}) 정기 레벨테스트
+                </b>
+                {levelNotice.daysLeft === 0 ? " · 오늘이에요" : ` · ${levelNotice.daysLeft}일 남았어요`}
+                <span className="block text-[12px] text-grey-500">결과로 새 학기 반을 정해요. 결과는 MY › 자녀에서 볼 수 있어요</span>
+              </span>
+            </div>
           )}
 
           <section>

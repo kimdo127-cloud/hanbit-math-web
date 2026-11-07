@@ -1,12 +1,12 @@
 "use client";
-// MY > 자녀 상세: 기본 정보 · 다니는 강좌(수강 중단) · 이 자녀의 보호자 연락처
+// MY > 자녀 상세: 기본 정보 · 레벨테스트 · 다니는 강좌(수강 중단) · 이 자녀의 보호자 연락처
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useFamily } from "@/components/family";
 import { BottomSheet, Button, Loader, TextField, Toast, TopBar, WEEKDAY, fmtDate, markBack, won } from "@/components/ui";
-import { ApiError, getWithdrawInfo, GRADE_LABEL, listEnrollments, today, updateChild, withdraw } from "@/lib/api";
+import { ApiError, getLevelTests, getWithdrawInfo, GRADE_LABEL, listEnrollments, today, updateChild, withdraw } from "@/lib/api";
 import type { Grade } from "@/lib/types";
 
 export default function ChildPage() {
@@ -24,8 +24,12 @@ export default function ChildPage() {
   const [wErr, setWErr] = useState("");
   const [info, setInfo] = useState<Awaited<ReturnType<typeof getWithdrawInfo>> | null>(null);
 
+  const [lv, setLv] = useState<Awaited<ReturnType<typeof getLevelTests>> | null>(null);
+  const [allTests, setAllTests] = useState(false);
+
   useEffect(() => {
     listEnrollments(id).then(setEnr);
+    getLevelTests(id).then(setLv).catch(() => setLv(null));
   }, [id]);
 
   // 수강 중단 전에 남은 수업 · 보강 기회 · 예상 환불 금액을 보여 준다
@@ -98,6 +102,65 @@ export default function ChildPage() {
             <Item k="생년월일" v={c.birth_date.replaceAll("-", ". ")} />
           </div>
         </section>
+
+        {lv && (
+          <section>
+            <h2 className="px-2 pb-2 text-[13px] font-semibold text-grey-500">레벨테스트</h2>
+            <div className="overflow-hidden rounded-3xl bg-white">
+              {lv.latest ? (
+                <div className="px-5 py-4">
+                  <div className="flex items-baseline justify-between">
+                    <p className="text-[13px] text-grey-500">
+                      {fmtDate(lv.latest.tested_on)} · {lv.latest.kindLabel} 테스트
+                    </p>
+                    <span className="rounded-full bg-brand-weak px-2.5 py-0.5 text-[13px] font-bold text-brand">{lv.latest.result_level}</span>
+                  </div>
+                  <p className="mt-1 text-[22px] font-bold tabular">
+                    {lv.latest.total_score}
+                    <span className="text-[15px] font-semibold text-grey-500">점</span>
+                  </p>
+                  <div className="mt-3 grid grid-cols-3 gap-2 text-center">
+                    {[
+                      ["개념", lv.latest.concept_score, 40],
+                      ["유형", lv.latest.type_score, 40],
+                      ["심화", lv.latest.advanced_score, 20],
+                    ].map(([k, v, m]) => (
+                      <div key={k} className="rounded-2xl bg-grey-50 py-2">
+                        <p className="text-[12px] text-grey-500">{k}</p>
+                        <p className="text-[15px] font-semibold tabular">
+                          {v}
+                          <span className="text-[12px] font-normal text-grey-400">/{m}</span>
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                  {lv.canAdvance && <p className="mt-3 rounded-2xl bg-brand-weak px-3 py-2.5 text-[13px] text-brand">선행 테스트를 통과했어요. 선행반은 상담 후 학원에서 신청해 드려요.</p>}
+                </div>
+              ) : (
+                <p className="px-5 py-4 text-[15px] text-grey-500">아직 레벨테스트 기록이 없어요. 학원 상담 때 볼 수 있어요.</p>
+              )}
+              <p className="border-t border-grey-100 px-5 py-3 text-[13px] text-grey-500">다음 정기 테스트 {fmtDate(lv.nextRegular)} · 2월·8월에 봐요</p>
+              {lv.tests.length > 1 && (
+                <>
+                  {allTests &&
+                    lv.tests.map((t) => (
+                      <div key={t.id} className="flex justify-between border-t border-grey-100 px-5 py-3 text-[14px]">
+                        <span className="text-grey-700">
+                          {fmtDate(t.tested_on)} · {t.kindLabel}
+                        </span>
+                        <span className="font-semibold tabular">
+                          {t.total_score}점 · {t.kind === "advance" ? (t.advance_ok ? "선행 통과" : "선행 미통과") : t.result_level}
+                        </span>
+                      </div>
+                    ))}
+                  <button onClick={() => setAllTests((v) => !v)} className="w-full border-t border-grey-100 px-5 py-3 text-[14px] font-semibold text-grey-700 active:bg-grey-50">
+                    {allTests ? "접기" : `지난 기록 ${lv.tests.length}건 보기`}
+                  </button>
+                </>
+              )}
+            </div>
+          </section>
+        )}
 
         <section>
           <h2 className="px-2 pb-2 text-[13px] font-semibold text-grey-500">다니는 강좌</h2>

@@ -95,3 +95,6 @@ export const listAllClasses = rpc("listAllClasses");
 export const getClassDetail = rpc("getClassDetail");
 export const enrollMany = rpc("enrollMany");
 export const getPlanned = rpc("getPlanned");
+export const getLevelTests = rpc("getLevelTests");
+export const getLevelTestNotice = rpc("getLevelTestNotice");
+export const getLevelTestDates = rpc("getLevelTestDates");

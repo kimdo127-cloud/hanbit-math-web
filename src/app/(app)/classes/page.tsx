@@ -156,9 +156,16 @@ export default function ClassesPage() {
                           <span className={`rounded-md px-1.5 py-0.5 text-[11px] font-semibold ${full ? "bg-grey-100 text-grey-400" : "bg-grey-100 text-grey-700"}`}>
                             {GRADE_LABEL[c.target_grade]}
                           </span>
+                          <span className="rounded-md bg-grey-100 px-1.5 py-0.5 text-[11px] font-semibold text-grey-700">{c.level}</span>
                           {c.myKids.length > 0 && (
                             <span className="rounded-md bg-brand-weak px-1.5 py-0.5 text-[11px] font-semibold text-brand">
                               {c.myKids.map((n) => n.slice(1)).join("·")} 수강 중
+                            </span>
+                          )}
+                          {/* 최근 레벨테스트 판정과 같은 레벨 (다니는 아이는 빼고) */}
+                          {c.levelKids.filter((n) => !c.myKids.includes(n)).length > 0 && (
+                            <span className="rounded-md bg-success-weak px-1.5 py-0.5 text-[11px] font-semibold text-success">
+                              {c.levelKids.filter((n) => !c.myKids.includes(n)).map((n) => n.slice(1)).join("·")} 레벨
                             </span>
                           )}
                         </div>

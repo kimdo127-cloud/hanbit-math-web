@@ -1,5 +1,5 @@
 "use client";
-// 캘린더: 지난 출결 + 신청한 보강 + 앞으로의 수업(예정). 결석일에서 바로 보강 신청으로 이동
+// 캘린더: 지난 출결 + 신청한 보강 + 앞으로의 수업(예정) + 정기 레벨테스트(2월·8월). 결석일에서 바로 보강 신청으로 이동
 // 헤더는 제목 없이 자녀 칩만 (어느 탭인지는 하단 탭이 알려 준다)
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import { DotLegend, MonthCalendar, type Dot } from "@/components/calendar";
 import { ChildTabs, useFamily } from "@/components/family";
 import { Badge, Card, Loader, MonthNav, fmtDate, markBack } from "@/components/ui";
-import { getAttendance, getMakeups, getPlanned, type AbsenceMakeup } from "@/lib/api";
+import { getAttendance, getLevelTestDates, getMakeups, getPlanned, type AbsenceMakeup } from "@/lib/api";
 import { currentMonth, shiftMonth } from "@/lib/calc";
 import type { AttendanceStatus } from "@/lib/types";
 
@@ -24,6 +24,7 @@ export default function AttendancePage() {
   const [mk, setMk] = useState<AbsenceMakeup[]>([]);
   const [sel, setSel] = useState<string | null>(null);
   const [planned, setPlanned] = useState<Awaited<ReturnType<typeof getPlanned>>>([]);
+  const [testDates, setTestDates] = useState<string[]>([]);
 
   useEffect(() => {
     if (!childId) return;
@@ -35,12 +36,14 @@ export default function AttendancePage() {
     });
     getMakeups(childId).then(setMk);
     getPlanned(childId, month).then(setPlanned);
+    getLevelTestDates(month).then(setTestDates).catch(() => setTestDates([]));
   }, [childId, month]);
 
   const dots: Record<string, Dot[]> = {};
   data?.rows.forEach((r) => (dots[r.date] = [...(dots[r.date] ?? []), r.status]));
   data?.rows.forEach((r) => r.makeup && (dots[r.makeup.date] = [...(dots[r.makeup.date] ?? []), "makeup"]));
   planned.forEach((p) => (dots[p.date] = [...(dots[p.date] ?? []), "planned"]));
+  testDates.forEach((d) => (dots[d] = [...(dots[d] ?? []), "leveltest"]));
   const dayPlanned = planned.filter((p) => p.date === sel);
   const dayRows = data?.rows.filter((r) => r.date === sel) ?? [];
   const dayMakeups = data?.rows.filter((r) => r.makeup?.date === sel) ?? [];
@@ -66,14 +69,23 @@ export default function AttendancePage() {
               <MonthCalendar month={month} dots={dots} selected={sel} onSelect={setSel} />
             </div>
             <div className="mt-3 border-t border-grey-100 pt-3">
-              <DotLegend items={["present", "late", "absent", "makeup", "planned"]} />
+              <DotLegend items={["present", "late", "absent", "makeup", "planned", ...(testDates.length ? (["leveltest"] as Dot[]) : [])]} />
             </div>
           </Card>
 
           {sel && (
             <Card>
               <h2 className="text-[15px] font-bold">{fmtDate(sel)}</h2>
-              {dayRows.length === 0 && dayMakeups.length === 0 && dayPlanned.length === 0 && <p className="mt-2 text-[14px] text-grey-500">이날은 수업이 없어요.</p>}
+              {testDates.includes(sel) && (
+                <div className="mt-3 flex items-center gap-3">
+                  <div className="flex-1">
+                    <p className="text-[15px] font-semibold">정기 레벨테스트</p>
+                    <p className="text-[13px] text-grey-500">결과로 새 학기 반을 정해요. 시간은 학원에서 안내해요</p>
+                  </div>
+                  <Badge>레벨테스트</Badge>
+                </div>
+              )}
+              {dayRows.length === 0 && dayMakeups.length === 0 && dayPlanned.length === 0 && !testDates.includes(sel) && <p className="mt-2 text-[14px] text-grey-500">이날은 수업이 없어요.</p>}
               {dayRows.map((r) => {
                 const m = mk.find((x) => x.attendanceId === r.attendanceId);
                 return (

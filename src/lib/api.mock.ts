@@ -15,6 +15,7 @@ import {
 } from "./calc";
 import { mockHash, TODAY } from "./seed";
 import { getSessionParentId, loadDB, nextId, saveDB, setSessionParentId } from "./store";
+import type { LevelTest } from "./types";
 import type { ActivityLog, ClassRoom, DB, ClassSchedule, Enrollment, Grade, Parent, Student, StudentContact } from "./types";
 
 const md = (d: string) => `${Number(d.slice(5, 7))}/${Number(d.slice(8, 10))}`;
@@ -617,6 +618,7 @@ export async function listAllClasses() {
   return db.classes.map((c) => ({
     ...classInfo(c),
     myKids: kids.filter((k) => db.enrollments.some((e) => e.student_id === k.id && e.class_id === c.id && e.end_date === null)).map((k) => k.name),
+    levelKids: [] as string[], // 백엔드: 최근 레벨테스트 판정이 이 강좌 레벨과 같은 같은 학년 아이
   }));
 }
 
@@ -683,4 +685,21 @@ export interface RegulationAnswer {
 export async function askRegulation(question: string): Promise<RegulationAnswer> {
   void question;
   throw new ApiError("규정 묻기는 서버에서만 동작해요.", 503);
+}
+
+
+// 레벨테스트 (목업 없음, 타입만). 규칙은 백엔드 logic/level.ts
+export interface LevelTestView extends LevelTest {
+  kindLabel: string;
+}
+export async function getLevelTests(studentId: number): Promise<{ tests: LevelTestView[]; latest: LevelTestView | null; canAdvance: boolean; nextRegular: string }> {
+  void studentId;
+  throw new ApiError("서버에서만 동작해요.", 503);
+}
+export async function getLevelTestNotice(): Promise<{ date: string; daysLeft: number } | null> {
+  throw new ApiError("서버에서만 동작해요.", 503);
+}
+export async function getLevelTestDates(month: string): Promise<string[]> {
+  void month;
+  throw new ApiError("서버에서만 동작해요.", 503);
 }

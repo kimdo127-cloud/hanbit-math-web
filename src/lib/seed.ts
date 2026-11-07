@@ -1,16 +1,16 @@
 // 빈 화면을 보지 않게 넣는 가상 데이터. 나중에 백엔드 시드 SQL로 옮긴다.
-import type { ActivityLog, AttendanceStatus, DB, Grade } from "./types";
+import type { ActivityLog, AttendanceStatus, ClassLevel, DB, Grade } from "./types";
 
 // 목업 기준일. 백엔드를 붙이면 서버의 오늘 날짜로 바뀐다.
 // 강좌 소개 (상세 화면용)
-const CLASS_INFO: Record<string, { level: string; description: string; textbook: string }> = {
+const CLASS_INFO: Record<string, { level: ClassLevel; description: string; textbook: string }> = {
   "중1 개념 기본": { level: "기본", description: "중학 수학을 처음 시작하는 강좌예요. 개념을 천천히 짚고, 매 수업 끝에 확인 문제로 이해했는지 점검해요.", textbook: "개념원리 중학 수학 1-2" },
   "중2 내신 대비": { level: "기본", description: "교과서 개념과 유형 문제를 함께 다뤄요. 학교 진도에 맞춰 내신 시험 3주 전부터는 기출 위주로 준비해요.", textbook: "개념원리 중학 수학 2-2 · 쎈 중2-2" },
   "중2 심화": { level: "심화", description: "개념을 알고 있는 학생이 응용·심화 문제를 푸는 강좌예요. 서술형 풀이를 매주 첨삭해요.", textbook: "블랙라벨 중2-2" },
   "중2 금요 보충": { level: "기본", description: "주 1회 금요일에 듣는 보충 강좌예요. 한 주 동안 배운 내용을 복습하고 부족한 유형을 채워요.", textbook: "쎈 중2-2" },
-  "중3 내신 + 고등 선행": { level: "내신 대비", description: "중3 내신과 고등 수학 준비를 함께 해요. 2학기에는 고1 공통수학 선행을 시작해요.", textbook: "개념원리 중학 수학 3-2 · 고등 공통수학1" },
-  "고1 공통수학 내신": { level: "내신 대비", description: "고1 공통수학 내신 강좌예요. 학교별 기출을 분석해 시험 범위에 맞춘 문제를 풀어요.", textbook: "개념원리 공통수학1 · 학교 부교재" },
-  "고2 수학Ⅰ·Ⅱ 수능 기초": { level: "수능 기초", description: "수학Ⅰ·Ⅱ 개념을 정리하고 수능형 문제에 익숙해지는 강좌예요.", textbook: "수학의 정석 수학Ⅰ · 수능특강" },
+  "중3 내신 + 고등 선행": { level: "심화", description: "중3 내신과 고등 수학 준비를 함께 해요. 2학기에는 고1 공통수학 선행을 시작해요.", textbook: "개념원리 중학 수학 3-2 · 고등 공통수학1" },
+  "고1 공통수학 내신": { level: "기본", description: "고1 공통수학 내신 강좌예요. 학교별 기출을 분석해 시험 범위에 맞춘 문제를 풀어요.", textbook: "개념원리 공통수학1 · 학교 부교재" },
+  "고2 수학Ⅰ·Ⅱ 수능 기초": { level: "기본", description: "수학Ⅰ·Ⅱ 개념을 정리하고 수능형 문제에 익숙해지는 강좌예요.", textbook: "수학의 정석 수학Ⅰ · 수능특강" },
 };
 
 // 학년별 진도 (수업 내용 시연용)
@@ -65,6 +65,7 @@ export function createSeed(): DB {
     payments: [],
     activity_logs: [],
     staff_tokens: [],
+    level_tests: [], // 목업에는 없음 (백엔드 시드에만)
   };
 
   // 직원
