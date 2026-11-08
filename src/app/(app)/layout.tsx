@@ -17,7 +17,7 @@ const TABS = [
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   // 상세(하위) 화면은 하단 탭을 숨겨 하던 일에서 이탈하지 않게 한다
-  const detail = /^\/(makeup|classes\/\d+|me\/.+)/.test(pathname);
+  const detail = /^\/(makeup|notifications|classes\/\d+|me\/.+)/.test(pathname);
   return (
     <FamilyProvider>
       <div className={`min-h-dvh bg-grey-100 ${detail ? "pb-10" : "pb-28"}`}>{children}</div>

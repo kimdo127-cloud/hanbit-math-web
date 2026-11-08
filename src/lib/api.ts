@@ -98,3 +98,12 @@ export const getPlanned = rpc("getPlanned");
 export const getLevelTests = rpc("getLevelTests");
 export const getLevelTestNotice = rpc("getLevelTestNotice");
 export const getLevelTestDates = rpc("getLevelTestDates");
+export const listNotifications = rpc("listNotifications");
+export const getUnreadCount = rpc("getUnreadCount");
+export const markNotificationsRead = rpc("markNotificationsRead");
+export const getPushKey = rpc("getPushKey");
+
+// 앱 푸시 구독: 브라우저가 만든 구독 정보를 백엔드에 저장 (가족 보호자 기기로 알림이 감)
+export const savePushSubscription = (sub: PushSubscriptionJSON) => call<boolean>("savePushSubscription", [sub]);
+export const removePushSubscription = (endpoint: string) => call<boolean>("removePushSubscription", [endpoint]);
+export const getPushStatus = () => call<boolean>("getPushStatus", []);

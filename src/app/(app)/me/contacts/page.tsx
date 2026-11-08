@@ -3,7 +3,7 @@
 import { Phone, Plus, X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { BottomSheet, Button, Dialog, Loader, Select, TextField, Toast, TopBar } from "@/components/ui";
-import { ACADEMY_PHONE, addFamilyContact, ApiError, getFamilyContacts, removeFamilyContact } from "@/lib/api";
+import { addFamilyContact, ApiError, getFamilyContacts, removeFamilyContact } from "@/lib/api";
 
 const RELATIONS = ["엄마", "아빠", "할머니", "할아버지", "보호자"];
 type Contact = Awaited<ReturnType<typeof getFamilyContacts>>[number];
@@ -64,7 +64,7 @@ export default function ContactsPage() {
                   <span className="block text-[15px] font-semibold">
                     {c.relation} <span className="tabular ml-1 font-normal">{c.phone}</span>
                   </span>
-                  {c.is_primary && <span className="block text-[13px] text-brand">대표 번호 · 학원 안내 문자를 받아요</span>}
+                  {c.is_primary && <span className="block text-[13px] text-brand">대표</span>}
                 </span>
                 {!c.is_primary && (
                   <button aria-label="연락처 삭제" onClick={() => setDel(c)} className="grid size-8 place-items-center text-grey-400">
@@ -86,7 +86,6 @@ export default function ContactsPage() {
               </button>
             </li>
           </ul>
-          <p className="px-1 text-[12px] text-grey-500">대표 번호를 바꾸려면 한빛수학({ACADEMY_PHONE})에 요청해 주세요.</p>
         </div>
       )}
 

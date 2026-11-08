@@ -67,6 +67,7 @@ export function createSeed(): DB {
     staff_tokens: [],
     level_tests: [], // 목업에는 없음 (백엔드 시드에만)
     invitations: [],
+    notifications: [],
   };
 
   // 직원
@@ -111,8 +112,8 @@ export function createSeed(): DB {
   db.families.push({ id: 1, name: "김서준·김하린 가족" });
   db.parents.push({ id: 1, family_id: 1, email: "demo@hanbit.kr", password_hash: mockHash("hanbit1234"), name: "김민정", created_at: "2026-08-20" });
   db.students.push(
-    { id: 1, family_id: 1, name: "김서준", grade: 8, school: "한빛중학교", birth_date: "2012-04-11" },
-    { id: 2, family_id: 1, name: "김하린", grade: 7, school: "한빛중학교", birth_date: "2013-09-02" },
+    { id: 1, family_id: 1, name: "김서준", grade: 8, school: "한빛중학교", birth_date: "2012-04-11", kiosk_code: "2580" },
+    { id: 2, family_id: 1, name: "김하린", grade: 7, school: "한빛중학교", birth_date: "2013-09-02", kiosk_code: "1357" },
   );
   db.family_contacts.push(
     { id: 1, family_id: 1, relation: "엄마", phone: "010-1234-5678", is_primary: true },
@@ -131,7 +132,7 @@ export function createSeed(): DB {
   classDefs.forEach(([, grade, , , , , fill], i) => {
     for (let k = 0; k < fill; k++) {
       db.families.push({ id: familyId, name: `${FILLER_NAMES[nameIdx % FILLER_NAMES.length]} 가족` });
-      db.students.push({ id: studentId, family_id: familyId, name: FILLER_NAMES[nameIdx % FILLER_NAMES.length], grade, school: "한빛중학교", birth_date: "2012-01-01" });
+      db.students.push({ id: studentId, family_id: familyId, name: FILLER_NAMES[nameIdx % FILLER_NAMES.length], grade, school: "한빛중학교", birth_date: "2012-01-01", kiosk_code: String(3000 + studentId * 17) });
       db.enrollments.push({ id: enrollId++, student_id: studentId, class_id: i + 1, start_date: "2026-09-01", end_date: null, refund_amount: null, refunded_at: null });
       // 보호자 연락처 (키오스크에서 뒷자리 4자리로 찾음)
       db.family_contacts.push({ id: db.family_contacts.length + 1, family_id: familyId, relation: k % 2 ? "아빠" : "엄마", phone: `010-${2000 + studentId * 13}-${String(1000 + ((studentId * 379) % 9000)).padStart(4, "0")}`, is_primary: true });
@@ -148,7 +149,7 @@ export function createSeed(): DB {
   Object.assign(g2, { end_date: "2026-10-05", refund_amount: 186660, refunded_at: "2026-10-08" });
   // 운영 시연: 학년이 다른 강좌 수강(선행) — 중1 학생이 중2 금요 보충
   db.families.push({ id: familyId, name: "윤채원 가족" });
-  db.students.push({ id: studentId, family_id: familyId, name: "윤채원", grade: 7, school: "한빛중학교", birth_date: "2013-03-02" });
+  db.students.push({ id: studentId, family_id: familyId, name: "윤채원", grade: 7, school: "한빛중학교", birth_date: "2013-03-02", kiosk_code: "7788" });
   db.enrollments.push({ id: enrollId++, student_id: studentId, class_id: 7, start_date: "2026-10-02", end_date: null, refund_amount: null, refunded_at: null });
   db.family_contacts.push({ id: db.family_contacts.length + 1, family_id: familyId, relation: "엄마", phone: "010-4455-7788", is_primary: true });
 
@@ -183,7 +184,7 @@ export function createSeed(): DB {
         const t = h * 60 + m + off;
         const checked_at = status === "absent" ? null : `${String(Math.floor(t / 60)).padStart(2, "0")}:${String(t % 60).padStart(2, "0")}`;
         // 등원은 키오스크(학생이 직접), 결석은 강사가 확인해 처리
-        db.attendances.push({ id: attId++, session_id: s.id, student_id: en.student_id, status, checked_at, source: status === "absent" ? "staff" : "kiosk" });
+        db.attendances.push({ id: attId++, session_id: s.id, student_id: en.student_id, status, checked_at, left_at: null, source: status === "absent" ? "staff" : "kiosk" });
       });
   });
 

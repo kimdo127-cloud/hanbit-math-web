@@ -5,8 +5,8 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useFamily } from "@/components/family";
-import { BottomSheet, Button, Loader, TextField, Toast, TopBar, WEEKDAY, fmtDate, won } from "@/components/ui";
-import { ApiError, getLevelTests, getWithdrawInfo, GRADE_LABEL, listEnrollments, today, updateChild, withdraw } from "@/lib/api";
+import { BottomSheet, Button, Loader, TextField, Toast, TopBar, WEEKDAY, fmtDate, markBack, won } from "@/components/ui";
+import { ApiError, getLevelTests, getWithdrawInfo, GRADE_LABEL, listEnrollments, today, updateChild, withdraw, type LevelTestView } from "@/lib/api";
 import type { Grade } from "@/lib/types";
 
 export default function ChildPage() {
@@ -25,7 +25,9 @@ export default function ChildPage() {
   const [info, setInfo] = useState<Awaited<ReturnType<typeof getWithdrawInfo>> | null>(null);
 
   const [lv, setLv] = useState<Awaited<ReturnType<typeof getLevelTests>> | null>(null);
-  const [allTests, setAllTests] = useState(false);
+  const [openTest, setOpenTest] = useState<LevelTestView | null>(null);
+  // 정기·입학 결과의 바로 앞 결과 (변화 표시용). 선행 테스트는 비교하지 않음
+  const prevOf = (t: LevelTestView) => (t.kind === "advance" ? null : (lv?.tests.find((x) => x.kind !== "advance" && x.tested_on < t.tested_on) ?? null));
 
   useEffect(() => {
     listEnrollments(id).then(setEnr);
@@ -100,6 +102,7 @@ export default function ChildPage() {
             <Item k="학년" v={GRADE_LABEL[c.grade]} />
             <Item k="학교" v={c.school} />
             <Item k="생년월일" v={c.birth_date.replaceAll("-", ". ")} />
+            <Item k="출석 번호" v={<span className="tabular">{c.kiosk_code}</span>} />
           </div>
         </section>
 
@@ -108,56 +111,41 @@ export default function ChildPage() {
             <h2 className="px-2 pb-2 text-[13px] font-semibold text-grey-500">레벨테스트</h2>
             <div className="overflow-hidden rounded-3xl bg-white">
               {lv.latest ? (
-                <div className="px-5 py-4">
-                  <div className="flex items-baseline justify-between">
-                    <p className="text-[13px] text-grey-500">
-                      {fmtDate(lv.latest.tested_on)} · {lv.latest.kindLabel} 테스트
-                    </p>
-                    <span className="rounded-full bg-brand-weak px-2.5 py-0.5 text-[13px] font-bold text-brand">{lv.latest.result_level}</span>
-                  </div>
-                  <p className="mt-1 text-[22px] font-bold tabular">
-                    {lv.latest.total_score}
-                    <span className="text-[15px] font-semibold text-grey-500">점</span>
-                  </p>
-                  <div className="mt-3 grid grid-cols-3 gap-2 text-center">
-                    {[
-                      ["개념", lv.latest.concept_score, 40],
-                      ["유형", lv.latest.type_score, 40],
-                      ["심화", lv.latest.advanced_score, 20],
-                    ].map(([k, v, m]) => (
-                      <div key={k} className="rounded-2xl bg-grey-50 py-2">
-                        <p className="text-[12px] text-grey-500">{k}</p>
-                        <p className="text-[15px] font-semibold tabular">
-                          {v}
-                          <span className="text-[12px] font-normal text-grey-400">/{m}</span>
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                  {lv.canAdvance && <p className="mt-3 rounded-2xl bg-brand-weak px-3 py-2.5 text-[13px] text-brand">선행 테스트를 통과했어요. 선행반은 상담 후 학원에서 신청해 드려요.</p>}
+                <div className="px-5 py-5">
+                  <TestDetail t={lv.latest} prev={prevOf(lv.latest)} />
+                  {(() => {
+                    // 맞는 반: 신청 가능한 반 우선, 없으면 참고로 마감된 반
+                    const r = lv.recommend.find((x) => x.seatsLeft > 0 && !x.overlap) ?? lv.recommend[0];
+                    return r ? (
+                      <Link href={`/classes/${r.classId}`} onClick={markBack} className="mt-4 flex items-center justify-between rounded-2xl bg-grey-50 px-4 py-3 active:bg-grey-100">
+                        <span className="text-[14px]">
+                          <span className="text-grey-500">맞는 반 </span>
+                          <b>{r.name}</b>
+                          <span className="text-grey-500">{r.seatsLeft === 0 ? " · 마감" : r.overlap ? " · 시간 겹침" : ` · ${r.seatsLeft}자리`}</span>
+                        </span>
+                        <ChevronRight size={18} className="text-grey-400" />
+                      </Link>
+                    ) : null;
+                  })()}
+                  {lv.canAdvance && <p className="mt-3 rounded-2xl bg-brand-weak px-4 py-3 text-[14px] text-brand">선행 테스트를 통과했어요. 선행반은 상담 후 학원에서 신청해요.</p>}
                 </div>
               ) : (
-                <p className="px-5 py-4 text-[15px] text-grey-500">아직 레벨테스트 기록이 없어요. 학원 상담 때 볼 수 있어요.</p>
+                <p className="px-5 py-4 text-[15px] text-grey-500">아직 레벨테스트 기록이 없어요.</p>
               )}
-              <p className="border-t border-grey-100 px-5 py-3 text-[13px] text-grey-500">다음 정기 테스트 {fmtDate(lv.nextRegular)} · 2월·8월에 봐요</p>
-              {lv.tests.length > 1 && (
-                <>
-                  {allTests &&
-                    lv.tests.map((t) => (
-                      <div key={t.id} className="flex justify-between border-t border-grey-100 px-5 py-3 text-[14px]">
-                        <span className="text-grey-700">
-                          {fmtDate(t.tested_on)} · {t.kindLabel}
-                        </span>
-                        <span className="font-semibold tabular">
-                          {t.total_score}점 · {t.kind === "advance" ? (t.advance_ok ? "선행 통과" : "선행 미통과") : t.result_level}
-                        </span>
-                      </div>
-                    ))}
-                  <button onClick={() => setAllTests((v) => !v)} className="w-full border-t border-grey-100 px-5 py-3 text-[14px] font-semibold text-grey-700 active:bg-grey-50">
-                    {allTests ? "접기" : `지난 기록 ${lv.tests.length}건 보기`}
+              <p className="border-t border-grey-100 px-5 py-3 text-[13px] text-grey-500">다음 정기 테스트 {fmtDate(lv.nextRegular)}</p>
+              {lv.tests
+                .filter((t) => t.id !== lv.latest?.id)
+                .map((t) => (
+                  <button key={t.id} onClick={() => setOpenTest(t)} className="flex w-full items-center justify-between border-t border-grey-100 px-5 py-3 text-left text-[14px] active:bg-grey-50">
+                    <span className="text-grey-700">
+                      {fmtDate(t.tested_on)} · {t.kindLabel}
+                    </span>
+                    <span className="tabular flex items-center gap-1 font-semibold">
+                      {t.kind === "advance" ? (t.advance_ok ? "선행 통과" : "선행 미통과") : t.result_level}
+                      <ChevronRight size={16} className="text-grey-400" />
+                    </span>
                   </button>
-                </>
-              )}
+                ))}
             </div>
           </section>
         )}
@@ -198,10 +186,6 @@ export default function ChildPage() {
                 </p>
               </div>
             ))}
-            <Link href="/classes" className="flex items-center justify-between px-5 py-4 text-[15px] font-semibold active:bg-grey-50">
-              다른 강좌 찾아보기
-              <ChevronRight size={18} className="text-grey-400" />
-            </Link>
           </div>
         </section>
 
@@ -252,7 +236,65 @@ export default function ChildPage() {
           </Button>
         </div>
       </BottomSheet>
+      <BottomSheet open={!!openTest} onClose={() => setOpenTest(null)} title={openTest ? `${fmtDate(openTest.tested_on)} ${openTest.kindLabel} 테스트` : ""}>
+        {openTest && <TestDetail t={openTest} prev={prevOf(openTest)} />}
+      </BottomSheet>
       <Toast message={toast} onDone={() => setToast(null)} />
     </main>
+  );
+}
+
+const LEVEL_MAX3 = { concept: 40, type: 40, advanced: 20 };
+const AREAS = [
+  ["수와 연산", "area_number"],
+  ["변화와 관계", "area_change"],
+  ["도형과 측정", "area_shape"],
+  ["자료와 가능성", "area_data"],
+] as const;
+
+function Bar({ label, value, max, weak }: { label: string; value: number; max: number; weak?: boolean }) {
+  return (
+    <div className="flex items-center gap-3 text-[13px]">
+      <span className={`w-24 shrink-0 ${weak ? "font-semibold text-grey-900" : "text-grey-500"}`}>{label}</span>
+      <span className="h-2 flex-1 overflow-hidden rounded-full bg-grey-100">
+        <span className={`block h-full rounded-full ${weak ? "bg-warning" : "bg-brand"}`} style={{ width: `${Math.round((value / max) * 100)}%` }} />
+      </span>
+      <span className="tabular w-12 text-right text-grey-700">{max === 100 ? `${value}%` : `${value}/${max}`}</span>
+    </div>
+  );
+}
+
+// 결과 한 건: 판정을 크게 → 총점·변화 → 약한 분야 → 막대 → 선생님 코멘트
+function TestDetail({ t, prev }: { t: LevelTestView; prev: LevelTestView | null }) {
+  const areas = AREAS.map(([l, k]) => [l, t[k]] as const).filter((x): x is readonly [(typeof AREAS)[number][0], number] => x[1] !== null);
+  const weak = areas.length ? [...areas].sort((a, b) => a[1] - b[1])[0][0] : null;
+  const diff = prev ? t.total_score - prev.total_score : null;
+  return (
+    <div>
+      <p className="text-[13px] text-grey-500">
+        {fmtDate(t.tested_on)} · {t.kindLabel} 테스트
+      </p>
+      <p className="mt-1 text-[28px] leading-tight font-bold">{t.kind === "advance" ? (t.advance_ok ? "선행 통과" : "선행 미통과") : t.result_level}</p>
+      <p className="tabular mt-0.5 text-[14px] text-grey-500">
+        {t.total_score}점
+        {diff !== null && <span className={diff > 0 ? "text-brand" : diff < 0 ? "text-warning" : ""}> · 지난번보다 {diff > 0 ? `+${diff}` : diff === 0 ? "같음" : diff}</span>}
+      </p>
+      {weak && <p className="mt-3 text-[15px] font-semibold">{weak}{(weak.charCodeAt(weak.length - 1) - 0xac00) % 28 ? "이" : "가"} 가장 약해요</p>}
+      <div className="mt-3 space-y-2">
+        <Bar label="개념" value={t.concept_score} max={LEVEL_MAX3.concept} />
+        <Bar label="유형" value={t.type_score} max={LEVEL_MAX3.type} />
+        <Bar label="심화" value={t.advanced_score} max={LEVEL_MAX3.advanced} />
+        {areas.length > 0 && <div className="pt-1" />}
+        {areas.map(([l, v]) => (
+          <Bar key={l} label={l} value={v} max={100} weak={l === weak} />
+        ))}
+      </div>
+      {t.memo && (
+        <p className="mt-4 rounded-2xl bg-grey-50 px-4 py-3 text-[14px] leading-relaxed text-grey-700">
+          <span className="mb-0.5 block text-[12px] text-grey-500">선생님 코멘트</span>
+          {t.memo}
+        </p>
+      )}
+    </div>
   );
 }

@@ -2,13 +2,14 @@
 // MY: 설정형 목록 (프로필 → 자녀 → 계정 → 고객센터). 자세한 내용은 하위 화면에서
 // 고객센터: 보통 앱처럼 챗봇 문의 + 전화 문의를 한 묶음으로 (챗봇 = 과제의 "규정 묻기" 화면)
 // 자녀는 학원이 등록한다 (같은 보호자 번호로 등록하면 자동 연결) → '자녀 추가'는 안내만
-import { Bot, ChevronRight, Headphones, KeyRound, Phone } from "lucide-react";
+import { Bell, Bot, ChevronRight, Headphones, KeyRound, Phone } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useFamily } from "@/components/family";
 import { BottomSheet, Button, TextField, Toast, markBack } from "@/components/ui";
 import { ACADEMY_PHONE, ApiError, changePassword, getFamilyContacts, GRADE_LABEL, listEnrollments, logout } from "@/lib/api";
+import { disablePush, enablePush, isPushOn, pushSupport } from "@/lib/push";
 
 function Row({ href, icon, title, sub, onClick }: { href?: string; icon?: React.ReactNode; title: React.ReactNode; sub?: React.ReactNode; onClick?: (e: React.MouseEvent<HTMLElement>) => void }) {
   const body = (
@@ -38,6 +39,8 @@ export default function MePage() {
   const { parent, children, reload } = useFamily();
   const [classes, setClasses] = useState<Record<number, string[]>>({});
   const [contactCount, setContactCount] = useState(0);
+  const [push, setPush] = useState<"on" | "off" | "ios-install" | "unsupported">("off");
+  const [pushInfo, setPushInfo] = useState(false);
   const [sheet, setSheet] = useState<null | "password">(null);
   const [pw, setPw] = useState({ cur: "", next: "", confirm: "" });
   const [error, setError] = useState("");
@@ -45,6 +48,9 @@ export default function MePage() {
 
   useEffect(() => {
     getFamilyContacts().then((c) => setContactCount(c.length));
+    const sup = pushSupport();
+    if (sup !== "ok") setPush(sup);
+    else isPushOn().then((on) => setPush(on ? "on" : "off"));
     Promise.all(children.map(async (c) => [c.id, (await listEnrollments(c.id)).filter((e) => !e.end_date).map((e) => e.cls.name)] as const)).then((e) =>
       setClasses(Object.fromEntries(e)),
     );
@@ -94,6 +100,30 @@ export default function MePage() {
           <div className="divide-y divide-grey-100 overflow-hidden rounded-3xl bg-white">
             <Row href="/me/contacts" onClick={markBack} icon={<Phone size={18} />} title="보호자 연락처" sub={`${contactCount}개`} />
             <Row
+              icon={<Bell size={18} />}
+              title="앱 알림"
+              sub={push === "on" ? "켜짐 · 등원·하원·결석, 레벨테스트 결과, 보강, 미납" : push === "ios-install" ? "홈 화면에 추가하면 받을 수 있어요" : push === "unsupported" ? "이 브라우저는 지원하지 않아요" : "꺼짐"}
+              onClick={async () => {
+                if (push === "ios-install") return setPushInfo(true);
+                if (push === "unsupported") return;
+                try {
+                  if (push === "on") {
+                    await disablePush();
+                    setPush("off");
+                    setToast("앱 알림을 껐어요");
+                  } else {
+                    const r = await enablePush();
+                    if (r === "on") {
+                      setPush("on");
+                      setToast("앱 알림을 켰어요");
+                    } else setToast(r === "denied" ? "브라우저 설정에서 알림을 허용해 주세요" : "지금은 알림을 켤 수 없어요");
+                  }
+                } catch {
+                  setToast("알림을 바꾸지 못했어요. 다시 시도해 주세요");
+                }
+              }}
+            />
+            <Row
               icon={<KeyRound size={18} />}
               title="비밀번호 변경"
               onClick={() => {
@@ -111,7 +141,6 @@ export default function MePage() {
             <Row href="/me/ask" onClick={markBack} icon={<Bot size={18} />} title="챗봇 문의" sub="수강료 · 보강 · 환불 규정을 바로 안내해요" />
             <Row href={`tel:${ACADEMY_PHONE}`} icon={<Headphones size={18} />} title="전화 문의" sub={`${ACADEMY_PHONE} · 평일 14:00~22:00`} />
           </div>
-          <p className="px-2 pt-2 text-[12px] text-grey-500">학부모 상담은 매월 마지막 주 토요일 10:00~13:00, 전화로 예약해 주세요.</p>
         </section>
 
         <button
@@ -141,6 +170,16 @@ export default function MePage() {
         </Button>
       </BottomSheet>
 
+      <BottomSheet open={pushInfo} onClose={() => setPushInfo(false)} title="아이폰에서 앱 알림 받기">
+        <ol className="list-decimal space-y-1.5 pl-5 text-[15px] text-grey-700">
+          <li>사파리 아래쪽 공유 버튼을 눌러요</li>
+          <li>&apos;홈 화면에 추가&apos;를 눌러요</li>
+          <li>홈 화면의 한빛수학을 열고 MY › 앱 알림을 켜요</li>
+        </ol>
+        <Button size="xl" className="mt-6 w-full" onClick={() => setPushInfo(false)}>
+          확인
+        </Button>
+      </BottomSheet>
       <Toast message={toast} onDone={() => setToast(null)} />
     </main>
   );

@@ -15,7 +15,7 @@ import {
 } from "./calc";
 import { mockHash, TODAY } from "./seed";
 import { getSessionParentId, loadDB, nextId, saveDB, setSessionParentId } from "./store";
-import type { LevelTest } from "./types";
+import type { AppNotification, LevelTest } from "./types";
 import type { ActivityLog, ClassRoom, DB, ClassSchedule, Enrollment, FamilyContact, Grade, Parent, Student } from "./types";
 
 const md = (d: string) => `${Number(d.slice(5, 7))}/${Number(d.slice(8, 10))}`;
@@ -655,7 +655,7 @@ export async function askRegulation(question: string): Promise<RegulationAnswer>
 export interface LevelTestView extends LevelTest {
   kindLabel: string;
 }
-export async function getLevelTests(studentId: number): Promise<{ tests: LevelTestView[]; latest: LevelTestView | null; canAdvance: boolean; nextRegular: string }> {
+export async function getLevelTests(studentId: number): Promise<{ tests: LevelTestView[]; latest: LevelTestView | null; canAdvance: boolean; nextRegular: string; recommend: { classId: number; name: string; seatsLeft: number; overlap: boolean }[] }> {
   void studentId;
   throw new ApiError("서버에서만 동작해요.", 503);
 }
@@ -664,5 +664,19 @@ export async function getLevelTestNotice(): Promise<{ date: string; daysLeft: nu
 }
 export async function getLevelTestDates(month: string): Promise<string[]> {
   void month;
+  throw new ApiError("서버에서만 동작해요.", 503);
+}
+
+// 알림함 · 앱 푸시 (목업 없음, 타입만)
+export async function listNotifications(): Promise<AppNotification[]> {
+  throw new ApiError("서버에서만 동작해요.", 503);
+}
+export async function getUnreadCount(): Promise<number> {
+  throw new ApiError("서버에서만 동작해요.", 503);
+}
+export async function markNotificationsRead(): Promise<void> {
+  throw new ApiError("서버에서만 동작해요.", 503);
+}
+export async function getPushKey(): Promise<string | null> {
   throw new ApiError("서버에서만 동작해요.", 503);
 }

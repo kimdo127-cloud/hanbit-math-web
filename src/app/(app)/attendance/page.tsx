@@ -93,7 +93,7 @@ export default function AttendancePage() {
                     <div className="flex-1">
                       <p className="text-[15px] font-semibold">{r.className}</p>
                       <p className="tabular text-[13px] text-grey-500">
-                        {r.startTime} 시작{r.checkedAt && ` · ${r.checkedAt} 등원`}
+                        {r.startTime} 시작{r.checkedAt && ` · ${r.checkedAt} 등원`}{r.leftAt && ` · ${r.leftAt} 하원`}
                         {r.status === "late" && <span className="text-warning"> · {r.lateMin}분 늦음</span>}
                       </p>
                       {r.topic && <p className="text-[13px] text-grey-700">수업 내용 · {r.topic}</p>}
