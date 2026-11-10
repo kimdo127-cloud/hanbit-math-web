@@ -138,7 +138,7 @@ export default function MePage() {
         <section>
           <h2 className="px-2 pb-2 text-[13px] font-semibold text-grey-500">고객센터</h2>
           <div className="divide-y divide-grey-100 overflow-hidden rounded-3xl bg-white">
-            <Row href="/me/ask" onClick={markBack} icon={<Bot size={18} />} title="챗봇 문의" sub="수강료 · 보강 · 환불 규정을 바로 안내해요" />
+            <Row href="/me/ask" onClick={markBack} icon={<Bot size={18} />} title="챗봇 문의" sub="학원 규정과 우리 아이 정보를 바로 안내해요" />
             <Row href={`tel:${ACADEMY_PHONE}`} icon={<Headphones size={18} />} title="전화 문의" sub={`${ACADEMY_PHONE} · 평일 14:00~22:00`} />
           </div>
         </section>

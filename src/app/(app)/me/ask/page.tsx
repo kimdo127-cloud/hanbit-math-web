@@ -2,6 +2,7 @@
 // MY > 고객센터 > 챗봇 문의 (과제의 "규정 묻기" 화면): 질문 → 백엔드 → Dify(규정 문서 검색 + GPT) → 답과 근거
 // 답 형식: 굵은 결론 → 항목 3개 이내 → 📄 근거 안내 줄. 근거를 누르면 검색된 규정 원문(자세히 보기)
 import { ArrowUp, FileText } from "lucide-react";
+import Link from "next/link";
 import { Fragment, useEffect, useRef, useState } from "react";
 import { BottomSheet, TopBar } from "@/components/ui";
 import { ACADEMY_PHONE, ApiError, askRegulation, type RegulationAnswer } from "@/lib/api";
@@ -65,6 +66,16 @@ function Answer({ data, onSource }: { data: RegulationAnswer; onSource: (s: Regu
           <span className="ml-0.5">›</span>
         </button>
       )}
+      {data.classes && data.classes.length > 0 && (
+        <div className="mt-3 space-y-1.5 border-t border-grey-100 pt-3">
+          {data.classes.map((c) => (
+            <Link key={c.id} href={`/classes/${c.id}`} className="flex items-center justify-between rounded-xl bg-brand-weak px-3.5 py-2.5 text-[14px] font-semibold text-brand active:opacity-80">
+              <span>{c.name} 강좌 보기</span>
+              <span className="text-[12px] font-medium">{c.seatsLeft}자리 남음 ›</span>
+            </Link>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -102,7 +113,7 @@ export default function AskPage() {
 
       <div className="flex-1 space-y-3 px-4 pt-2 pb-36">
         <div className="max-w-[85%] rounded-2xl rounded-tl-md bg-white px-4 py-3 text-[15px] leading-relaxed text-grey-700">
-          <strong className="text-grey-900">학원 규정</strong>과 우리 아이 출결·보강·수강료·맞는 반을 물어보세요.
+          안녕하세요, 한빛수학 챗봇이에요. 무엇을 도와드릴까요?
         </div>
         {msgs.length === 0 && (
           <div className="flex flex-wrap gap-2 pt-1">
@@ -158,7 +169,11 @@ export default function AskPage() {
             <ArrowUp size={18} />
           </button>
         </form>
-        <p className="pt-1.5 text-center text-[11px] text-grey-500">답은 학원 규정과 우리 아이 정보를 바탕으로 해요. 정확한 상담은 {ACADEMY_PHONE}</p>
+        <p className="pt-1.5 text-center text-[11px] text-grey-500">답은 학원 규정과 우리 아이 정보를 바탕으로 해요. 정확한 상담은{" "}
+          <a href={`tel:${ACADEMY_PHONE}`} className="underline underline-offset-2">
+            {ACADEMY_PHONE}
+          </a>
+        </p>
       </div>
 
       <BottomSheet open={!!source} onClose={() => setSource(null)} title="근거 규정">

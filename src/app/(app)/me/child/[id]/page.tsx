@@ -127,6 +127,17 @@ export default function ChildPage() {
                       </Link>
                     ) : null;
                   })()}
+                  {/* 맞는 반이 마감·시간 겹침이면 지금 신청 가능한 대안 반 (챗봇 안내와 같은 규칙) */}
+                  {lv.alternatives?.map((a) => (
+                    <Link key={a.classId} href={`/classes/${a.classId}`} onClick={markBack} className="mt-2 flex items-center justify-between rounded-2xl bg-brand-weak px-4 py-3 active:opacity-80">
+                      <span className="text-[14px]">
+                        <span className="text-grey-500">대신 들을 수 있는 반 </span>
+                        <b className="text-brand">{a.name}</b>
+                        <span className="text-grey-500"> · {a.seatsLeft}자리</span>
+                      </span>
+                      <ChevronRight size={18} className="text-grey-400" />
+                    </Link>
+                  ))}
                   {lv.canAdvance && <p className="mt-3 rounded-2xl bg-brand-weak px-4 py-3 text-[14px] text-brand">선행 테스트를 통과했어요. 선행반은 상담 후 학원에서 신청해요.</p>}
                 </div>
               ) : (

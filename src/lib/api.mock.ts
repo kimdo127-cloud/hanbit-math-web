@@ -644,6 +644,8 @@ export async function getPlanned(studentId: number, month: string) {
 export interface RegulationAnswer {
   answer: string;
   sources: { regulation: string; content: string }[];
+  // 답에 나온 강좌 중 지금 신청 가능한 반 (백엔드가 DB와 맞춰 고름) → 강좌 상세 바로 가기
+  classes?: { id: number; name: string; seatsLeft: number }[];
 }
 export async function askRegulation(question: string): Promise<RegulationAnswer> {
   void question;
@@ -655,7 +657,7 @@ export async function askRegulation(question: string): Promise<RegulationAnswer>
 export interface LevelTestView extends LevelTest {
   kindLabel: string;
 }
-export async function getLevelTests(studentId: number): Promise<{ tests: LevelTestView[]; latest: LevelTestView | null; canAdvance: boolean; nextRegular: string; recommend: { classId: number; name: string; seatsLeft: number; overlap: boolean }[] }> {
+export async function getLevelTests(studentId: number): Promise<{ tests: LevelTestView[]; latest: LevelTestView | null; canAdvance: boolean; nextRegular: string; recommend: { classId: number; name: string; seatsLeft: number; overlap: boolean }[]; alternatives?: { classId: number; name: string; seatsLeft: number }[] }> {
   void studentId;
   throw new ApiError("서버에서만 동작해요.", 503);
 }

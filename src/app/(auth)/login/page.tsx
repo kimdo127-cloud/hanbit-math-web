@@ -74,19 +74,18 @@ function LoginForm() {
       <p className="mt-6 text-center text-[14px] text-grey-700">
         가입은 학원에서 받은 <b className="font-semibold text-grey-900">초대 문자의 링크</b>로 할 수 있어요.
       </p>
-      {/* 테스트용: 시연 계정으로 바로 로그인 (배포 전 제거) */}
-      <div className="mt-auto pb-8">
-        <p className="mb-2 text-center text-[12px] text-grey-400">테스트용 계정</p>
-        <Button
+      {/* 테스트용: 시연 계정으로 바로 로그인 (어드민 로그인 화면과 같은 모양) */}
+      <div className="mt-8 border-t border-grey-200 pt-6 pb-8">
+        <p className="mb-3 text-[12px] font-semibold text-grey-500">테스트 계정으로 로그인</p>
+        <button
           type="button"
-          variant="secondary"
-          size="m"
-          className="w-full"
           disabled={busy}
           onClick={() => quickLogin(TEST_ACCOUNT.email, TEST_ACCOUNT.password)}
+          className="w-full rounded-xl border border-grey-200 bg-white px-2 py-3 text-center active:bg-grey-50 disabled:opacity-40"
         >
-          김민정 (서준·하린 보호자)로 로그인
-        </Button>
+          <span className="block text-[14px] font-semibold">학부모</span>
+          <span className="mt-0.5 block text-[11px] text-grey-500">김민정 · 서준·하린 보호자</span>
+        </button>
       </div>
     </main>
   );

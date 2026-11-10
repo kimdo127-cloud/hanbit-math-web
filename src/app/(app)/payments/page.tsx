@@ -2,7 +2,7 @@
 // 납부: 미납이 있을 때만 요약, 내역은 월별로 묶어서 최근 달부터 (월 화살표 없이 스크롤)
 import { useEffect, useState } from "react";
 import { Badge, Card, Loader, won } from "@/components/ui";
-import { getPaymentHistory } from "@/lib/api";
+import { ACADEMY_PHONE, getPaymentHistory } from "@/lib/api";
 
 export default function PaymentsPage() {
   const [groups, setGroups] = useState<Awaited<ReturnType<typeof getPaymentHistory>> | null>(null);
@@ -26,6 +26,12 @@ export default function PaymentsPage() {
               <p className="mt-1 text-[13px] text-grey-500">
                 {unpaid.map((r) => `${Number(r.month.slice(5))}월 ${r.studentName}`).join(", ")}
               </p>
+              <div className="mt-3 border-t border-grey-100 pt-3">
+                <p className="text-[13px] text-grey-700">수강료는 학원에 직접 내요. 납부 방법은 학원에 문의해 주세요.</p>
+                <a href={`tel:${ACADEMY_PHONE}`} className="mt-2.5 flex h-11 items-center justify-center rounded-xl bg-grey-100 text-[14px] font-semibold text-grey-900 active:bg-grey-200">
+                  학원에 전화하기 · {ACADEMY_PHONE}
+                </a>
+              </div>
             </Card>
           )}
           {groups.length === 0 && <Card className="text-center text-[15px] text-grey-700">납부 내역이 없어요.</Card>}

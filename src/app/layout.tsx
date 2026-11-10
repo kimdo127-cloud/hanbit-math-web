@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   title: "한빛수학",
   description: "한빛수학 학부모 앱 — 수강, 출결, 납부를 한곳에서",
   appleWebApp: { capable: true, title: "한빛수학", statusBarStyle: "default" },
-  icons: { apple: "/apple-touch-icon.png" },
+  icons: { icon: "/icon.svg", apple: "/apple-touch-icon.png" },
 };
 
 export const viewport: Viewport = {
