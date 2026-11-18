@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { WarmUp } from "@/components/warm-up";
+import { Analytics } from "@vercel/analytics/next";
 
 export const metadata: Metadata = {
   title: "한빛수학",
@@ -28,6 +29,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <WarmUp />
         {/* PC에서도 폰 너비로 보이게 */}
         <div className="mx-auto min-h-dvh max-w-[420px] bg-white shadow-[0_0_24px_rgba(0,0,0,0.04)]">{children}</div>
+        <Analytics />
       </body>
     </html>
   );
